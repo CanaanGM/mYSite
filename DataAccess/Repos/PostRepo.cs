@@ -71,6 +71,7 @@ public class PostRepo : IPostRepo
 
             // Paging
             var totalCount = await query.CountAsync();
+            
             var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
             var posts = await query
                 .Skip((page - 1) * pageSize)
