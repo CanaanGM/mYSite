@@ -13,4 +13,5 @@ public class Post
     public string Slug { get; set; } = null!;
     public string Body { get; set; } = null!;
     public bool IsSoftDeleted { get; set; } = false;
+    
 }

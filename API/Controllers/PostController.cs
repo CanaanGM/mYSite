@@ -1,3 +1,4 @@
+using Application.Security;
 using DataAccess.Dtos;
 using DataAccess.Repos;
 using Microsoft.AspNetCore.Mvc;
@@ -9,8 +10,10 @@ namespace API.Controllers;
 public class PostController : ControllerBase
 {
     private readonly IPostRepo _postRepo;
-    public PostController(IPostRepo postRepo)
+    private readonly IJwtGenerator _jwtGenerator;
+    public PostController(IPostRepo postRepo, IJwtGenerator jwtGenerator)
     {
+        _jwtGenerator = jwtGenerator;
         _postRepo = postRepo;
         
     }
@@ -23,7 +26,17 @@ public class PostController : ControllerBase
         switch (posts.Operation)
         {
             case OperationStatus.Success:
-                return Ok(posts.Value);
+                return Ok( new PostResponse<List<PostReadDto>>(
+                    posts.Operation.ToString(),
+                      posts.Value,
+                      _jwtGenerator.GenerateToken(new Domain.Entities.User{
+                        Id = Guid.NewGuid(),
+                        DisplayName = "Canaan",
+                        Email= "canaan@example.com",
+                        Password = "wut?!"
+                      })
+                      
+                      ));
             case OperationStatus.Error:
                 return StatusCode(500, "Something went wrong processing your request, please try again later.");
             default:
@@ -98,7 +111,8 @@ public class PostController : ControllerBase
 
 public record PostResponse<T> (
     string Status,
-    T Value
+    T Value,
+    string Token
 );
 
 public record PostUpsertRequest(
