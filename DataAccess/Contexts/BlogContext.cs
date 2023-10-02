@@ -2,7 +2,6 @@ namespace DataAccess.Contexts;
 
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 public class BlogContext : DbContext 
 {
 
