@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "e:\\development\\c#\\Scarlet-Site\\CLI\\CLI.csproj": {}
+    "E:\\development\\c#\\Scarlet-Site\\CLI\\CLI.csproj": {}
   },
   "projects": {
-    "e:\\development\\c#\\Scarlet-Site\\CLI\\CLI.csproj": {
+    "E:\\development\\c#\\Scarlet-Site\\CLI\\CLI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "e:\\development\\c#\\Scarlet-Site\\CLI\\CLI.csproj",
+        "projectUniqueName": "E:\\development\\c#\\Scarlet-Site\\CLI\\CLI.csproj",
         "projectName": "CLI",
-        "projectPath": "e:\\development\\c#\\Scarlet-Site\\CLI\\CLI.csproj",
+        "projectPath": "E:\\development\\c#\\Scarlet-Site\\CLI\\CLI.csproj",
         "packagesPath": "C:\\Users\\Canaan\\.nuget\\packages\\",
-        "outputPath": "e:\\development\\c#\\Scarlet-Site\\CLI\\obj\\",
+        "outputPath": "E:\\development\\c#\\Scarlet-Site\\CLI\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

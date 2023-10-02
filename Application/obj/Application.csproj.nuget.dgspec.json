@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "e:\\development\\c#\\Scarlet-Site\\Application\\Application.csproj": {}
+    "E:\\development\\c#\\Scarlet-Site\\Application\\Application.csproj": {}
   },
   "projects": {
-    "e:\\development\\c#\\Scarlet-Site\\Application\\Application.csproj": {
+    "E:\\development\\c#\\Scarlet-Site\\Application\\Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "e:\\development\\c#\\Scarlet-Site\\Application\\Application.csproj",
+        "projectUniqueName": "E:\\development\\c#\\Scarlet-Site\\Application\\Application.csproj",
         "projectName": "Application",
-        "projectPath": "e:\\development\\c#\\Scarlet-Site\\Application\\Application.csproj",
+        "projectPath": "E:\\development\\c#\\Scarlet-Site\\Application\\Application.csproj",
         "packagesPath": "C:\\Users\\Canaan\\.nuget\\packages\\",
-        "outputPath": "e:\\development\\c#\\Scarlet-Site\\Application\\obj\\",
+        "outputPath": "E:\\development\\c#\\Scarlet-Site\\Application\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

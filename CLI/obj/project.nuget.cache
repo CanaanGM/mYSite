@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "xfRjTe1qgaRDKda/dKoyWlpq39Q3lPs25cvwOGxVkfoK16hLUuAPfqsL8JrsLgbvg3hWiRFTjjH0iu5aUYsikQ==",
+  "dgSpecHash": "0kwa8iovKrxEYmon2nvJ5MQrSNgGy7x3I1STNpXQXjohUlrfgiXLMCZs5erh06WBkSaEuMwvRsJ9oGSP/yXfeQ==",
   "success": true,
-  "projectFilePath": "e:\\development\\c#\\Scarlet-Site\\CLI\\CLI.csproj",
+  "projectFilePath": "E:\\development\\c#\\Scarlet-Site\\CLI\\CLI.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "e:\\development\\c#\\Scarlet-Site\\Domain\\Domain.csproj": {}
+    "E:\\development\\c#\\Scarlet-Site\\Domain\\Domain.csproj": {}
   },
   "projects": {
-    "e:\\development\\c#\\Scarlet-Site\\Domain\\Domain.csproj": {
+    "E:\\development\\c#\\Scarlet-Site\\Domain\\Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "e:\\development\\c#\\Scarlet-Site\\Domain\\Domain.csproj",
+        "projectUniqueName": "E:\\development\\c#\\Scarlet-Site\\Domain\\Domain.csproj",
         "projectName": "Domain",
-        "projectPath": "e:\\development\\c#\\Scarlet-Site\\Domain\\Domain.csproj",
+        "projectPath": "E:\\development\\c#\\Scarlet-Site\\Domain\\Domain.csproj",
         "packagesPath": "C:\\Users\\Canaan\\.nuget\\packages\\",
-        "outputPath": "e:\\development\\c#\\Scarlet-Site\\Domain\\obj\\",
+        "outputPath": "E:\\development\\c#\\Scarlet-Site\\Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
