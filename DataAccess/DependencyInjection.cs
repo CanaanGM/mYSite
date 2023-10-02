@@ -1,4 +1,7 @@
 using DataAccess.Contexts;
+using DataAccess.Dtos;
+using DataAccess.Repos;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,9 +17,12 @@ public static class DependencyInjection
 
         services.AddDbContext<BlogContext>(opt =>
         {
-            opt.UseSqlServer(configuration["ConnectionStrings:SqlServer"]); // get this string from config
+            opt.UseSqlServer(configuration["ConnectionStrings:SqlServer"]); 
         });
 
+        services.AddScoped<IPostRepo, PostRepo>();
+        services.AddAutoMapper(typeof(Profiles).Assembly);
+        
         return services;
     }
 }
