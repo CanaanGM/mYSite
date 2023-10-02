@@ -3,6 +3,7 @@ using AutoMapper;
 using DataAccess.Contexts;
 using DataAccess.Dtos;
 using Domain.Entities;
+using Domain.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -36,20 +37,60 @@ public class PostRepo : IPostRepo
         }
     }
 
-    public async Task<Result<List<PostReadDto>>> GetAll()
+    public async Task<Result<PagedList<PostReadDto>>> GetAll(
+        int page = 1,
+        int pageSize = 10,
+        string? searchTerm = null,
+        string sortBy = "Id",
+        bool isSortAscending = true)
     {
+        
         try
         {
-            var post = await _context.Posts
-                .AsNoTracking()
+            var query = _context.Posts
+                .AsNoTracking();
+
+            // Filtering
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                query = query.Where(p =>
+                    p.Title.Contains(searchTerm) ||
+                    p.Body.Contains(searchTerm));
+            }
+
+            // Sorting
+            string sortOrder = isSortAscending ? "ASC" : "DESC";
+            // will be an object later
+            string orderBy = sortBy.ToLower() switch
+            {
+                "title" => "Title",
+                "content" => "Content",
+                _ => "Id",
+            };
+
+
+            // Paging
+            var totalCount = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+            var posts = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
-            return Result<List<PostReadDto>>.Success(_mapper.Map<List<PostReadDto>>(post));
+            var result = new PagedList<PostReadDto>(
+                data: _mapper.Map<List<PostReadDto>>(posts),
+                totalCount: totalCount,
+                totalPages: totalPages,
+                currentPage: page,
+                pageSize: pageSize);
+
+            return Result<PagedList<PostReadDto>>.Success(result, OperationStatus.Success);
+
         }
         catch (Exception ex)
         {
             _logger.LogError($"ERROR: {ex.Message}", ex);
-            return Result<List<PostReadDto>>.Failure($"ERROR: {ex.Message}", OperationStatus.Error);
+            return Result<PagedList<PostReadDto>>.Failure($"ERROR: {ex.Message}", OperationStatus.Error);
         }
     }
 

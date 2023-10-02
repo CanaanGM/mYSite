@@ -1,6 +1,7 @@
 using Application.Security;
 using DataAccess.Dtos;
 using DataAccess.Repos;
+using Domain.Shared;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -18,93 +19,91 @@ public class PostController : ControllerBase
         
     }
 
-    [HttpGet]
-    public async Task<IActionResult> Get ()
+    [HttpGet("pageSize,page,searchTerm,sortBy,isAscSort ")]
+    public async Task<IActionResult> Get (
+        int pageSize = 5,
+        int page = 1,
+        string? searchTerm = null,
+        string sortBy = "Id",
+        bool isAscSort = true
+    )
     {
-        var posts = await _postRepo.GetAll();
+        var posts = await _postRepo.GetAll(
+            pageSize: pageSize,
+            page: page,
+            searchTerm:searchTerm,
+            sortBy: sortBy,
+            isSortAscending: isAscSort
+            
+            );
 
-        switch (posts.Operation)
+        return posts.Operation switch
         {
-            case OperationStatus.Success:
-                return Ok( new PostResponse<List<PostReadDto>>(
+            OperationStatus.Success => Ok(new PostResponse<PagedList<PostReadDto>>(
                     posts.Operation.ToString(),
                       posts.Value,
-                      _jwtGenerator.GenerateToken(new Domain.Entities.User{
-                        Id = Guid.NewGuid(),
-                        DisplayName = "Canaan",
-                        Email= "canaan@example.com",
-                        Password = "wut?!"
+                      _jwtGenerator.GenerateToken(new Domain.Entities.User
+                      {
+                          Id = Guid.NewGuid(),
+                          DisplayName = "Canaan",
+                          Email = "canaan@example.com",
+                          Password = "wut?!"
                       })
-                      
-                      ));
-            case OperationStatus.Error:
-                return StatusCode(500, "Something went wrong processing your request, please try again later.");
-            default:
-                return BadRequest();
-        }
+
+                      )),
+            OperationStatus.Error => StatusCode(500, "Something went wrong processing your request, please try again later."),
+            _ => BadRequest()
+        };
     }
 
     [HttpGet("slug")]
     public async Task<IActionResult> GetPost(string slug)
     {
         var post = await _postRepo.GetBySlug(slug);
-        switch (post.Operation)
-        {
-            case OperationStatus.Success:
-                return Ok(post.Value);
-            case OperationStatus.Error:
-                return StatusCode(500, "Something went wrong processing your request, please try again later.");
-            default:
-                return BadRequest();
-        }
 
+       return  post.Operation switch 
+        {
+            OperationStatus.Success => Ok(post.Value),
+            OperationStatus.Error => StatusCode(500, "Something went wrong processing your request, please try again later."),
+            _ => BadRequest()
+        };
     }
 
     [HttpPut("id:Guid")]
     public async Task<IActionResult> UpSert(Guid id, [FromBody] PostUpsertRequest post)
     {
         var res = await _postRepo.UpsertPost(id,new PostUpsertDto{ Title = post.Title, Body = post.Body  } );
-        switch (res.Operation)
+        return res.Operation switch
         {
-            case OperationStatus.Created:
-                return CreatedAtAction(nameof(Create), new { id = res.Value.Id }, res.Value);
-            case OperationStatus.Updated:
-                return NoContent();
-            case OperationStatus.Error:
-                return StatusCode(500, "Something went wrong processing your request, please try again later.");
-            default:
-                return BadRequest();
-        }
+            OperationStatus.Created => CreatedAtAction(nameof(Create), new { id = res.Value.Id }, res.Value),
+            OperationStatus.Updated => NoContent(),
+            OperationStatus.Error => StatusCode(500, "Something went wrong processing your request, please try again later."),
+            _ => BadRequest()
+        };
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] PostUpsertRequest post)
     {
         var res = await _postRepo.CreatePost( new PostUpsertDto { Title = post.Title, Body = post.Body });
-        switch (res.Operation)
+        return res.Operation switch
         {
-            case OperationStatus.Created:
-                return CreatedAtAction( nameof(Create),new {id = res.Value.Id}, res.Value);
-            case OperationStatus.Error:
-                return StatusCode(500, "Something went wrong processing your request, please try again later.");
-            default:
-                return BadRequest();
-        }
+            OperationStatus.Created => CreatedAtAction(nameof(Create), new { id = res.Value.Id }, res.Value),
+            OperationStatus.Error => StatusCode(500, "Something went wrong processing your request, please try again later."),
+            _ => BadRequest()
+        };
     }
 
     [HttpDelete("id:Guid")]
     public async Task<IActionResult> Delete (Guid id)
     {
         var res = await _postRepo.Delete(id);
-        switch (res.Operation)
+        return res.Operation switch
         {
-            case OperationStatus.Deleted:
-                return NoContent();
-            case OperationStatus.Error:
-                return StatusCode(500, "Something went wrong processing your request, please try again later.");
-            default:
-                return BadRequest();
-        }
+            OperationStatus.Deleted => NoContent(),
+            OperationStatus.Error => StatusCode(500, "Something went wrong processing your request, please try again later."),
+            _ => BadRequest()
+        };
     }
 
 }
