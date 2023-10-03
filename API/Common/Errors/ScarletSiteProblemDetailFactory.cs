@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Options;
 
-namespace API.Errors;
+namespace API.Common.Errors;
 
 internal sealed class ScarletSiteProblemDetailsFactory : ProblemDetailsFactory
 {

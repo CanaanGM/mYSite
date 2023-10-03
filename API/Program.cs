@@ -1,7 +1,7 @@
 using DataAccess;
 using Application;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using API.Errors;
+using API.Common.Errors;
 
 var builder = WebApplication.CreateBuilder(args);
 {
