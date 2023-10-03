@@ -1,7 +1,11 @@
 using System.Text.RegularExpressions;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
+
 using DataAccess.Contexts;
 using DataAccess.Dtos;
+using DataAccess.Utilities;
+
 using Domain.Entities;
 using Domain.Shared;
 using Microsoft.EntityFrameworkCore;
@@ -14,9 +18,12 @@ public class PostRepo : IPostRepo
     private readonly BlogContext _context;
     private readonly ILogger<PostRepo> _logger;
     private readonly IMapper _mapper;
-    public PostRepo(BlogContext context, ILogger<PostRepo> logger, IMapper mapper)
+    private readonly ITagRepo _tagRepo;
+
+    public PostRepo(BlogContext context, ILogger<PostRepo> logger, IMapper mapper, ITagRepo tagRepo)
     {
         _mapper = mapper;
+        _tagRepo = tagRepo;
         _logger = logger;
         _context = context;
     }
@@ -27,8 +34,10 @@ public class PostRepo : IPostRepo
         {
             var post = await _context.Posts
                 .AsNoTracking()
+                .ProjectTo<PostReadDto>(_mapper.ConfigurationProvider)
                 .SingleOrDefaultAsync(p => p.Slug == slug);
-            return Result<PostReadDto>.Success(_mapper.Map<PostReadDto>(post));
+
+            return Result<PostReadDto>.Success(post);
         }
         catch (Exception ex)
         {
@@ -55,7 +64,7 @@ public class PostRepo : IPostRepo
             {
                 query = query.Where(p =>
                     p.Title.Contains(searchTerm) ||
-                    p.Body.Contains(searchTerm));
+                    p.Content.Contains(searchTerm));
             }
 
             // Sorting
@@ -74,12 +83,14 @@ public class PostRepo : IPostRepo
             
             var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
             var posts = await query
+                
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
+                .ProjectTo<PostReadDto>(_mapper.ConfigurationProvider)
                 .ToListAsync();
 
             var result = new PagedList<PostReadDto>(
-                data: _mapper.Map<List<PostReadDto>>(posts),
+                data:posts,
                 totalCount: totalCount,
                 totalPages: totalPages,
                 currentPage: page,
@@ -98,18 +109,92 @@ public class PostRepo : IPostRepo
     public async Task<Result<PostReadDto>> UpsertPost(Guid postId, PostUpsertDto postDto)
     {
         var post2Update = await _context.Posts
-            // .Include()
+            .Include(p => p.PostTags)
+                .ThenInclude(pt => pt.Tag)
+            .Include(p => p.PostCategories)
+                .ThenInclude(pt => pt.Category)
+
             .SingleOrDefaultAsync(p => p.Id == postId);
         if (post2Update is not Post)
             return await CreatePost(postDto);
 
+        try
+        {
+            post2Update.Slug = Sanitization.GenerateSlug(postDto.Title);
+            _mapper.Map(postDto, post2Update);
 
-        post2Update.Slug = GenerateSlug(postDto.Title);
-        _mapper.Map(postDto, post2Update);
-        // fix relations here !
-        await _context.SaveChangesAsync();
+            post2Update.LastModifiedAt = DateTime.UtcNow;
+            post2Update.PostTags = new HashSet<PostTag>();
+            post2Update.PostCategories= new HashSet<PostCategory>();    
 
-        return Result<PostReadDto>.Success(_mapper.Map<PostReadDto>(post2Update), OperationStatus.Updated);
+            if(postDto.IsPublished)
+                post2Update.PublishDate = DateTime.UtcNow;  
+            else
+                post2Update.PublishDate = new DateTime();
+
+
+            // abstract this
+            foreach (var tag in postDto.Tags)
+            {
+                var existingTag = await _context.Tags
+                    .SingleOrDefaultAsync(t => t.Name == tag.Name);
+
+                if (existingTag is null)
+                {
+                    existingTag = new Tag { 
+                        Name = Sanitization.GenerateName(tag.Name),
+                        LastModifiedAt = DateTime.UtcNow,
+                    };
+                    _context.Tags
+                            .Add(existingTag);
+                }
+
+                post2Update.PostTags.Add(
+                        new PostTag
+                        {
+                            Tag = existingTag,
+                            Post = post2Update
+                        });
+
+            }
+
+            // abstract this too
+            foreach (var category in postDto.Categories)
+            {
+                var existingCat = await _context.Categories
+                    .SingleOrDefaultAsync(t => t.Name == category.Name);
+
+                if (existingCat is null)
+                {
+                    existingCat = new Category
+                    {
+                        Name = Sanitization.GenerateName(category.Name),
+                        LastModifiedAt = DateTime.UtcNow
+                    };
+                    _context.Categories
+                            .Add(existingCat);
+                }
+
+                post2Update.PostCategories.Add(
+                        new PostCategory
+                        {
+                            Category = existingCat,
+                            Post = post2Update
+                        });
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Result<PostReadDto>.Success(_mapper.Map<PostReadDto>(post2Update), OperationStatus.Updated);
+
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"ERROR: {ex.Message}", ex);
+            return Result<PostReadDto>.Failure($"ERROR: {ex.Message}", OperationStatus.Error);
+        }
+
+
     }
 
     public async Task<Result<PostReadDto>> CreatePost(PostUpsertDto postDto)
@@ -117,11 +202,70 @@ public class PostRepo : IPostRepo
         try
         {
             var newPost = _mapper.Map<Post>(postDto);
-            newPost.Slug = GenerateSlug(newPost.Title);
+
+            newPost.Slug = Sanitization.GenerateSlug(newPost.Title);
+            newPost.PostTags = new HashSet<PostTag>();
+            newPost.PostCategories = new HashSet<PostCategory>();
+            newPost.LastModifiedAt = DateTime.UtcNow;
+            if (postDto.IsPublished)
+                newPost.PublishDate = DateTime.UtcNow;
+            else
+                newPost.PublishDate = new DateTime();
+
+            // in their own place
+            foreach (var tag in postDto.Tags)
+            {
+                var existingTag = await _context.Tags
+                    .SingleOrDefaultAsync(t => t.Name == tag.Name);
+
+                if (existingTag is  null)
+                {
+                    existingTag = new Tag {
+                        Name = Sanitization.GenerateName(tag.Name),
+                        LastModifiedAt = DateTime.UtcNow
+                    };
+                    _context.Tags
+                            .Add(existingTag);
+                }
+
+                newPost.PostTags.Add(
+                        new PostTag
+                        {
+                            Tag = existingTag,
+                            Post = newPost
+                        });
+            }
+
+            // home this homeless function!
+            foreach (var category in postDto.Categories)
+            {
+                var existingCat = await _context.Categories
+                    .SingleOrDefaultAsync(t => t.Name == category.Name);
+
+                if (existingCat is null)
+                {
+                    existingCat = new Category
+                    {
+                        Name = Sanitization.GenerateName(category.Name),
+                        LastModifiedAt = DateTime.UtcNow
+                    };
+                    _context.Categories
+                            .Add(existingCat);
+                }
+
+                newPost.PostCategories.Add(
+                        new PostCategory
+                        {
+                            Category = existingCat,
+                            Post = newPost
+                        });
+            }
+
 
 
             await _context.AddAsync(newPost);
             await _context.SaveChangesAsync();
+
             return Result<PostReadDto>.Success(
                 _mapper.Map<PostReadDto>(newPost), OperationStatus.Created);
 
@@ -150,11 +294,6 @@ public class PostRepo : IPostRepo
     }
 
 
-    private string GenerateSlug(string title)
-    {
-        string sanitize = Regex.Replace(title.ToLower().Trim(), @"[^a-zA-Z0-9]+", "-");
-        string slug = Regex.Replace(sanitize, @"-$", "");
-        return slug;
-    }
+
 
 }

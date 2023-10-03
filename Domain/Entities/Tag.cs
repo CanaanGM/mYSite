@@ -10,4 +10,6 @@ public class Tag
     public string Name { get; set; } = null!;
     public DateTime CreatedAt { get; set; }
     public DateTime LastModifiedAt { get; set; }
+
+    public ICollection<PostTag> PostTags { get; set; }
 }

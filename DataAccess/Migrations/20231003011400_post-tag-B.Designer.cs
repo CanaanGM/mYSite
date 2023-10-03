@@ -4,6 +4,7 @@ using DataAccess.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(BlogContext))]
-    partial class BlogContextModelSnapshot : ModelSnapshot
+    [Migration("20231003011400_post-tag-B")]
+    partial class posttagB
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -94,21 +97,6 @@ namespace DataAccess.Migrations
                     b.ToTable("Posts");
                 });
 
-            modelBuilder.Entity("Domain.Entities.PostCategory", b =>
-                {
-                    b.Property<Guid>("PostId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("CategoryId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("PostId", "CategoryId");
-
-                    b.HasIndex("CategoryId");
-
-                    b.ToTable("PostCategory");
-                });
-
             modelBuilder.Entity("Domain.Entities.PostTag", b =>
                 {
                     b.Property<Guid>("PostId")
@@ -151,25 +139,6 @@ namespace DataAccess.Migrations
                     b.ToTable("Tags");
                 });
 
-            modelBuilder.Entity("Domain.Entities.PostCategory", b =>
-                {
-                    b.HasOne("Domain.Entities.Category", "Category")
-                        .WithMany("CategoryPosts")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.Post", "Post")
-                        .WithMany("PostCategories")
-                        .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Category");
-
-                    b.Navigation("Post");
-                });
-
             modelBuilder.Entity("Domain.Entities.PostTag", b =>
                 {
                     b.HasOne("Domain.Entities.Post", "Post")
@@ -189,15 +158,8 @@ namespace DataAccess.Migrations
                     b.Navigation("Tag");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Category", b =>
-                {
-                    b.Navigation("CategoryPosts");
-                });
-
             modelBuilder.Entity("Domain.Entities.Post", b =>
                 {
-                    b.Navigation("PostCategories");
-
                     b.Navigation("PostTags");
                 });
 

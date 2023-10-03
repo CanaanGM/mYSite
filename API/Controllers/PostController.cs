@@ -51,7 +51,7 @@ public class PostController : ControllerBase
                       })
 
                       )),
-            OperationStatus.Error => StatusCode(500, "Something went wrong processing your request, please try again later."),
+            OperationStatus.Error => Problem(statusCode:500, detail:"Something went wrong processing your request, please try again later."),
             _ => BadRequest()
         };
     }
@@ -72,7 +72,16 @@ public class PostController : ControllerBase
     [HttpPut("id:Guid")]
     public async Task<IActionResult> UpSert(Guid id, [FromBody] PostUpsertRequest post)
     {
-        var res = await _postRepo.UpsertPost(id,new PostUpsertDto{ Title = post.Title, Body = post.Body  } );
+        var res = await _postRepo.UpsertPost(
+            id,
+            new PostUpsertDto{ 
+                Title = post.Title, 
+                Content = post.Body, 
+                Tags = post.Tags,
+                Categories = post.Categories,
+                IsPublished = post.IsPublised
+
+            });
         return res.Operation switch
         {
             OperationStatus.Created => CreatedAtAction(nameof(Create), new { id = res.Value.Id }, res.Value),
@@ -85,7 +94,14 @@ public class PostController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] PostUpsertRequest post)
     {
-        var res = await _postRepo.CreatePost( new PostUpsertDto { Title = post.Title, Body = post.Body });
+        var res = await _postRepo.CreatePost( 
+            new PostUpsertDto {
+                Title = post.Title, 
+                Content = post.Body, 
+                Tags = post.Tags,
+                Categories = post.Categories,
+                IsPublished = post.IsPublised
+            });
         return res.Operation switch
         {
             OperationStatus.Created => CreatedAtAction(nameof(Create), new { id = res.Value.Id }, res.Value),
@@ -116,5 +132,8 @@ public record PostResponse<T> (
 
 public record PostUpsertRequest(
     string Title,
-    string Body
+    string Body,
+    List<TagUpsertDto> Tags,
+    List<CategoryUpsertDto> Categories,
+    bool IsPublised = false
 );

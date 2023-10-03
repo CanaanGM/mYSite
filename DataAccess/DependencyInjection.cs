@@ -21,6 +21,8 @@ public static class DependencyInjection
         });
 
         services.AddScoped<IPostRepo, PostRepo>();
+        services.AddScoped<ITagRepo, TagRepo>();
+
         services.AddAutoMapper(typeof(Profiles).Assembly);
         
         return services;

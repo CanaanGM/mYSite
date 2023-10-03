@@ -10,4 +10,6 @@ public class Category
     public string Name { get; set; } = null!;
     public DateTime CreatedAt { get; set; }
     public DateTime LastModifiedAt { get; set; }
+
+    public ICollection<PostCategory> CategoryPosts { get; set; }
 }

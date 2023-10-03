@@ -4,20 +4,20 @@ namespace DataAccess.Dtos;
 
 public class PostReadDto
 {
-    public PostReadDto(Guid id, string title, string slug, string body, bool isSoftDeleted)
-    {
-        Id = id;
-        Title = title;
-        Slug = slug;
-        Body = body;
-        IsSoftDeleted = isSoftDeleted;
-    }
 
-    public Guid Id { get; }
-    public string Title { get; }
-    public string Slug { get; }
-    public string Body { get; }
-    public bool IsSoftDeleted { get; }
+
+    public Guid Id { get; set; }
+    public string Title { get; set; }
+    public string Slug { get; set; }
+    public string Content { get; set; }
+    public bool IsSoftDeleted { get; set; }
+    public ICollection<TagReadDto> Tags { get; set; }
+    public ICollection<CategoryReadDto> Categories { get; set; }
+
+    public bool IsPublished { get; set; } = false;
+    public DateTime PublishDate { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime LastModifiedAt { get; set; }
 
 }
 public class PostUpsertDto
@@ -26,5 +26,10 @@ public class PostUpsertDto
     [MaxLength(128)]
     public string Title { get; set; } = null!;
     [Required]
-    public string Body { get; set; } = null!;
+    public string Content { get; set; } = null!;
+
+    public bool IsPublished { get; set; } = false;
+
+    public ICollection<TagUpsertDto> Tags { get; set; }
+    public ICollection<CategoryUpsertDto> Categories { get; set; }
 }
