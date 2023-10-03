@@ -1,6 +1,7 @@
-using API.Exceptions;
 using DataAccess;
 using Application;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using API.Errors;
 
 var builder = WebApplication.CreateBuilder(args);
 {
@@ -13,6 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
         .AddDataAccess(builder.Configuration)
         .AddApplication(builder.Configuration);
 
+    builder.Services.AddSingleton<ProblemDetailsFactory, ScarletSiteProblemDetailsFactory>();
 }
 var app = builder.Build();
 {
@@ -21,8 +23,8 @@ var app = builder.Build();
         app.UseSwagger();
         app.UseSwaggerUI();
     }
-    app.UseMiddleware<ExceptionMiddleware>();
 
+    app.UseExceptionHandler("/error");
     app.UseHttpsRedirection();
 
     app.UseAuthorization();

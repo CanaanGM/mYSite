@@ -19,7 +19,7 @@ public class PostController : ControllerBase
         
     }
 
-    [HttpGet("pageSize,page,searchTerm,sortBy,isAscSort ")]
+    [HttpGet("{pageSize},{page},{searchTerm},{sortBy},{isAscSort}")]
     public async Task<IActionResult> Get (
         int pageSize = 5,
         int page = 1,
@@ -56,7 +56,7 @@ public class PostController : ControllerBase
         };
     }
 
-    [HttpGet("slug")]
+    [HttpGet("{slug}")]
     public async Task<IActionResult> GetPost(string slug)
     {
         var post = await _postRepo.GetBySlug(slug);
@@ -64,12 +64,12 @@ public class PostController : ControllerBase
        return  post.Operation switch 
         {
             OperationStatus.Success => Ok(post.Value),
-            OperationStatus.Error => StatusCode(500, "Something went wrong processing your request, please try again later."),
+            OperationStatus.Error => Problem(statusCode: 500, detail: "Something went wrong processing your request, please try again later."),
             _ => BadRequest()
         };
     }
 
-    [HttpPut("id:Guid")]
+    [HttpPut("{id:Guid}")]
     public async Task<IActionResult> UpSert(Guid id, [FromBody] PostUpsertRequest post)
     {
         var res = await _postRepo.UpsertPost(
@@ -86,7 +86,7 @@ public class PostController : ControllerBase
         {
             OperationStatus.Created => CreatedAtAction(nameof(Create), new { id = res.Value.Id }, res.Value),
             OperationStatus.Updated => NoContent(),
-            OperationStatus.Error => StatusCode(500, "Something went wrong processing your request, please try again later."),
+            OperationStatus.Error => Problem(statusCode: 500, detail: "Something went wrong processing your request, please try again later."),
             _ => BadRequest()
         };
     }
@@ -105,19 +105,19 @@ public class PostController : ControllerBase
         return res.Operation switch
         {
             OperationStatus.Created => CreatedAtAction(nameof(Create), new { id = res.Value.Id }, res.Value),
-            OperationStatus.Error => StatusCode(500, "Something went wrong processing your request, please try again later."),
+            OperationStatus.Error => Problem(statusCode: 500, detail: "Something went wrong processing your request, please try again later."),
             _ => BadRequest()
         };
     }
 
-    [HttpDelete("id:Guid")]
+    [HttpDelete("{id:Guid}")]
     public async Task<IActionResult> Delete (Guid id)
     {
         var res = await _postRepo.Delete(id);
         return res.Operation switch
         {
             OperationStatus.Deleted => NoContent(),
-            OperationStatus.Error => StatusCode(500, "Something went wrong processing your request, please try again later."),
+            OperationStatus.Error => Problem(statusCode: 500, detail: "Something went wrong processing your request, please try again later."),
             _ => BadRequest()
         };
     }
