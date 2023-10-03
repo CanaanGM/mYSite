@@ -115,9 +115,16 @@ public class PostRepo : IPostRepo
                 .ThenInclude(pt => pt.Category)
 
             .SingleOrDefaultAsync(p => p.Id == postId);
+
         if (post2Update is not Post)
             return await CreatePost(postDto);
 
+        return await UpdatePost(postDto, post2Update);
+
+    }
+
+    private async Task<Result<PostReadDto>> UpdatePost(PostUpsertDto postDto, Post post2Update)
+    {
         try
         {
             post2Update.Slug = Sanitization.GenerateSlug(postDto.Title);
@@ -125,63 +132,17 @@ public class PostRepo : IPostRepo
 
             post2Update.LastModifiedAt = DateTime.UtcNow;
             post2Update.PostTags = new HashSet<PostTag>();
-            post2Update.PostCategories= new HashSet<PostCategory>();    
+            post2Update.PostCategories = new HashSet<PostCategory>();
 
-            if(postDto.IsPublished)
-                post2Update.PublishDate = DateTime.UtcNow;  
+            if (postDto.IsPublished)
+                post2Update.PublishDate = DateTime.UtcNow;
             else
                 post2Update.PublishDate = new DateTime();
 
 
-            // abstract this
-            foreach (var tag in postDto.Tags)
-            {
-                var existingTag = await _context.Tags
-                    .SingleOrDefaultAsync(t => t.Name == tag.Name);
+            await GeneratePostTags(postDto.Tags, post2Update);
 
-                if (existingTag is null)
-                {
-                    existingTag = new Tag { 
-                        Name = Sanitization.GenerateName(tag.Name),
-                        LastModifiedAt = DateTime.UtcNow,
-                    };
-                    _context.Tags
-                            .Add(existingTag);
-                }
-
-                post2Update.PostTags.Add(
-                        new PostTag
-                        {
-                            Tag = existingTag,
-                            Post = post2Update
-                        });
-
-            }
-
-            // abstract this too
-            foreach (var category in postDto.Categories)
-            {
-                var existingCat = await _context.Categories
-                    .SingleOrDefaultAsync(t => t.Name == category.Name);
-
-                if (existingCat is null)
-                {
-                    existingCat = new Category
-                    {
-                        Name = Sanitization.GenerateName(category.Name),
-                        LastModifiedAt = DateTime.UtcNow
-                    };
-                    _context.Categories
-                            .Add(existingCat);
-                }
-
-                post2Update.PostCategories.Add(
-                        new PostCategory
-                        {
-                            Category = existingCat,
-                            Post = post2Update
-                        });
-            }
+            await GeneratePostCategories(postDto.Categories, post2Update);
 
             await _context.SaveChangesAsync();
 
@@ -193,8 +154,6 @@ public class PostRepo : IPostRepo
             _logger.LogError($"ERROR: {ex.Message}", ex);
             return Result<PostReadDto>.Failure($"ERROR: {ex.Message}", OperationStatus.Error);
         }
-
-
     }
 
     public async Task<Result<PostReadDto>> CreatePost(PostUpsertDto postDto)
@@ -212,56 +171,8 @@ public class PostRepo : IPostRepo
             else
                 newPost.PublishDate = new DateTime();
 
-            // in their own place
-            foreach (var tag in postDto.Tags)
-            {
-                var existingTag = await _context.Tags
-                    .SingleOrDefaultAsync(t => t.Name == tag.Name);
-
-                if (existingTag is  null)
-                {
-                    existingTag = new Tag {
-                        Name = Sanitization.GenerateName(tag.Name),
-                        LastModifiedAt = DateTime.UtcNow
-                    };
-                    _context.Tags
-                            .Add(existingTag);
-                }
-
-                newPost.PostTags.Add(
-                        new PostTag
-                        {
-                            Tag = existingTag,
-                            Post = newPost
-                        });
-            }
-
-            // home this homeless function!
-            foreach (var category in postDto.Categories)
-            {
-                var existingCat = await _context.Categories
-                    .SingleOrDefaultAsync(t => t.Name == category.Name);
-
-                if (existingCat is null)
-                {
-                    existingCat = new Category
-                    {
-                        Name = Sanitization.GenerateName(category.Name),
-                        LastModifiedAt = DateTime.UtcNow
-                    };
-                    _context.Categories
-                            .Add(existingCat);
-                }
-
-                newPost.PostCategories.Add(
-                        new PostCategory
-                        {
-                            Category = existingCat,
-                            Post = newPost
-                        });
-            }
-
-
+            await GeneratePostTags(postDto.Tags, newPost);
+            await GeneratePostCategories(postDto.Categories, newPost);
 
             await _context.AddAsync(newPost);
             await _context.SaveChangesAsync();
@@ -276,6 +187,8 @@ public class PostRepo : IPostRepo
             return Result<PostReadDto>.Failure($"ERROR: {ex.Message}", OperationStatus.Error);
         }
     }
+   
+   
     public async Task<Result<bool>> Delete(Guid postId)
     {
         try
@@ -293,6 +206,59 @@ public class PostRepo : IPostRepo
         }
     }
 
+    private async Task GeneratePostTags(ICollection<TagUpsertDto> tags, Post post2Update)
+    {
+        foreach (var tag in tags)
+        {
+            var existingTag = await _context.Tags
+                .SingleOrDefaultAsync(t => t.Name == tag.Name);
+
+            if (existingTag is null)
+            {
+                existingTag = new Tag
+                {
+                    Name = Sanitization.GenerateName(tag.Name),
+                    LastModifiedAt = DateTime.UtcNow,
+                };
+                _context.Tags
+                        .Add(existingTag);
+            }
+
+            post2Update.PostTags.Add(
+                    new PostTag
+                    {
+                        Tag = existingTag,
+                        Post = post2Update
+                    });
+        }
+    }
+
+    private async Task GeneratePostCategories(ICollection<CategoryUpsertDto> categories, Post post2Update)
+    {
+        foreach (var category in categories)
+        {
+            var existingCat = await _context.Categories
+                .SingleOrDefaultAsync(t => t.Name == category.Name);
+
+            if (existingCat is null)
+            {
+                existingCat = new Category
+                {
+                    Name = Sanitization.GenerateName(category.Name),
+                    LastModifiedAt = DateTime.UtcNow
+                };
+                _context.Categories
+                        .Add(existingCat);
+            }
+
+            post2Update.PostCategories.Add(
+                    new PostCategory
+                    {
+                        Category = existingCat,
+                        Post = post2Update
+                    });
+        }
+    }
 
 
 
