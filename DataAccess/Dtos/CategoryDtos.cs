@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace DataAccess.Dtos
 {
@@ -12,7 +7,6 @@ namespace DataAccess.Dtos
         [Required]
         [MaxLength(64)]
         public string Name { get; set; } = null!;
-
     }
 
     public class CategoryReadDto
@@ -29,6 +23,5 @@ namespace DataAccess.Dtos
         public string Name { get; } = null!;
         public DateTime CreatedAt { get; }
         public DateTime LastModifiedAt { get; }
-
     }
 }

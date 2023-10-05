@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 
@@ -8,6 +7,7 @@ using DataAccess.Utilities;
 
 using Domain.Entities;
 using Domain.Shared;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -53,7 +53,6 @@ public class PostRepo : IPostRepo
         string sortBy = "Id",
         bool isSortAscending = true)
     {
-        
         try
         {
             var query = _context.Posts
@@ -77,27 +76,25 @@ public class PostRepo : IPostRepo
                 _ => "Id",
             };
 
-
             // Paging
             var totalCount = await query.CountAsync();
-            
+
             var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
             var posts = await query
-                
+
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ProjectTo<PostReadDto>(_mapper.ConfigurationProvider)
                 .ToListAsync();
 
             var result = new PagedList<PostReadDto>(
-                data:posts,
+                data: posts,
                 totalCount: totalCount,
                 totalPages: totalPages,
                 currentPage: page,
                 pageSize: pageSize);
 
             return Result<PagedList<PostReadDto>>.Success(result, OperationStatus.Success);
-
         }
         catch (Exception ex)
         {
@@ -120,7 +117,6 @@ public class PostRepo : IPostRepo
             return await CreatePost(postDto);
 
         return await UpdatePost(postDto, post2Update);
-
     }
 
     private async Task<Result<PostReadDto>> UpdatePost(PostUpsertDto postDto, Post post2Update)
@@ -139,7 +135,6 @@ public class PostRepo : IPostRepo
             else
                 post2Update.PublishDate = new DateTime();
 
-
             await GeneratePostTags(postDto.Tags, post2Update);
 
             await GeneratePostCategories(postDto.Categories, post2Update);
@@ -147,7 +142,6 @@ public class PostRepo : IPostRepo
             await _context.SaveChangesAsync();
 
             return Result<PostReadDto>.Success(_mapper.Map<PostReadDto>(post2Update), OperationStatus.Updated);
-
         }
         catch (Exception ex)
         {
@@ -179,7 +173,6 @@ public class PostRepo : IPostRepo
 
             return Result<PostReadDto>.Success(
                 _mapper.Map<PostReadDto>(newPost), OperationStatus.Created);
-
         }
         catch (Exception ex)
         {
@@ -187,8 +180,7 @@ public class PostRepo : IPostRepo
             return Result<PostReadDto>.Failure($"ERROR: {ex.Message}", OperationStatus.Error);
         }
     }
-   
-   
+
     public async Task<Result<bool>> Delete(Guid postId)
     {
         try
@@ -259,7 +251,4 @@ public class PostRepo : IPostRepo
                     });
         }
     }
-
-
-
 }

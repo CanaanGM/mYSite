@@ -1,7 +1,9 @@
 using AutoMapper;
+
 using Domain.Entities;
 
 namespace DataAccess.Dtos;
+
 public class Profiles : Profile
 {
     public Profiles()
@@ -22,6 +24,5 @@ public class Profiles : Profile
 
         CreateMap<Category, CategoryReadDto>().ReverseMap();
         CreateMap<Category, CategoryUpsertDto>().ReverseMap();
-
     }
 }

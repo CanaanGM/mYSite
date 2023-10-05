@@ -14,6 +14,7 @@ public static class DependencyInjection
         
         services.AddSingleton<IJwtGenerator, JwtGenerator>();
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
+
         return services;
     }
 }

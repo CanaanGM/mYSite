@@ -7,5 +7,4 @@ public class PostTag
 
     public Post Post { get; set; } = null!;
     public Tag Tag { get; set; } = null!;
-    
 }

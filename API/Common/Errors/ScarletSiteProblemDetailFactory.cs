@@ -92,7 +92,7 @@ internal sealed class ScarletSiteProblemDetailsFactory : ProblemDetailsFactory
             problemDetails.Extensions["traceId"] = traceId;
         }
 
-        // problemDetails.Extensions.Add("Canaan's Property", "He is learning");
+        problemDetails.Extensions.Add("Canaan's Property", "He is learning");
 
         _configure?.Invoke(new() { HttpContext = httpContext!, ProblemDetails = problemDetails });
     }
