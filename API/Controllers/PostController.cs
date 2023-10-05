@@ -6,7 +6,7 @@ using DataAccess.Dtos;
 using DataAccess.Repos;
 
 using Domain.Shared;
-
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -24,7 +24,7 @@ public class PostController : ControllerBase
         _postRepo = postRepo;
     }
 
-    [HttpGet("{pageSize},{page},{searchTerm},{sortBy},{isAscSort}")]
+    [HttpGet("pageSize,page,searchTerm,sortBy,isAscSort")]
     public async Task<IActionResult> Get(
         int pageSize = 5,
         int page = 1,
@@ -66,6 +66,7 @@ public class PostController : ControllerBase
         };
     }
 
+    [Authorize(Roles = "Admin, User")]
     [HttpPut("{id:Guid}")]
     public async Task<IActionResult> UpSert(Guid id, [FromBody] PostUpsertRequest post)
     {
@@ -108,6 +109,7 @@ public class PostController : ControllerBase
         };
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id:Guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
