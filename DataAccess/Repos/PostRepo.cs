@@ -60,7 +60,8 @@ public class PostRepo : IPostRepo
                 .AsNoTracking();
 
             // Apply filtering based on filter type
-            ApplyFilter(ref query, filterValue, filterType);
+            if (!string.IsNullOrEmpty(filterType) && !string.IsNullOrEmpty(filterValue))
+                ApplyFilter(ref query, filterValue, filterType);
 
             // Apply additional filtering based on search term
             if (!string.IsNullOrEmpty(searchTerm))
@@ -100,17 +101,14 @@ public class PostRepo : IPostRepo
 
     private void ApplyFilter(ref IQueryable<Post> query, string filterValue, string filterType)
     {
-        if (!string.IsNullOrEmpty(filterType) && !string.IsNullOrEmpty(filterValue))
-        {
             query = filterType.ToLower() switch
             {
                 "tag" => query
                     .Where(p => p.PostTags.Any(pt => pt.Tag.Name == filterValue)), 
                 "category" => query
                     .Where(p => p.PostCategories.Any(pc => pc.Category.Name == filterValue)), 
-                _ => query, // Handle other filter types or do nothing for invalid types.
+                _ => query, 
             };
-        }
     }
 
 
