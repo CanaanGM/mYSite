@@ -13,3 +13,6 @@ public record LoginResponse(
     string Token,
     string[] Roles
     );
+
+public record EmailConfirmationResponse(string message);
+public record RegisterResponse(string message);

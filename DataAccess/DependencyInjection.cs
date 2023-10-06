@@ -29,9 +29,12 @@ public static class DependencyInjection
         services.AddIdentityCore<User>(opt =>
         {
             opt.User.RequireUniqueEmail = true; //TODO: further configure this
+            opt.SignIn.RequireConfirmedEmail = true;
         })
             .AddRoles<IdentityRole>()
-            .AddEntityFrameworkStores<BlogContext>();
+            .AddEntityFrameworkStores<BlogContext>()
+            .AddDefaultTokenProviders()
+            ;
 
         return services;
     }

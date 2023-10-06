@@ -1,3 +1,6 @@
+using System.Net;
+using System.Text;
+using System.Text.Encodings.Web;
 using API.Contracts;
 
 using Application.Security;
@@ -30,6 +33,7 @@ public class AccountController : ControllerBase
         {
             Email = userCreds.Email,
             UserName = userCreds.UserName,
+            EmailConfirmed = false,
         };
 
         var res = await _userManager.CreateAsync(user, userCreds.Password);
@@ -42,11 +46,21 @@ public class AccountController : ControllerBase
             return ValidationProblem();
         }
 
-        await _userManager.AddToRoleAsync(user, "User");
+        // TODO: email body generation
+        string confirmationLink = await GenerateEmailConfirmationLink(user);
 
-        //TODO:  place holder for the actual response
-        //TODO: can you navigate a user from hserer ? ?? ? ? ?
-        return StatusCode(201);
+        return CreatedAtAction(nameof(Register), new RegisterResponse(confirmationLink));
+    }
+
+    private async Task<string> GenerateEmailConfirmationLink(User user)
+    {
+        var emailConfirmToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        emailConfirmToken = Uri.EscapeDataString(emailConfirmToken);
+
+        // <Request.Scheme> :// <Request.Host> /api/auth/ConfirmEmail?userId=user.Id&token=emailConfirmationToken
+        var confirmationLink = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/auth/ConfirmEmail?userId={user.Id}&token={emailConfirmToken}";
+        await _userManager.AddToRoleAsync(user, "User");
+        return confirmationLink;
     }
 
     [HttpPost("login")]
@@ -68,11 +82,57 @@ public class AccountController : ControllerBase
             ));
     }
 
-    // [HttpPost]
-    // public async Task<IActionResult> ResetPassword()
-    // {
-    //     return Ok();
-    // }
+    // todo
+    // password confirmation request
+    // password confirmation
+
+    // Email confirmation request
+
+    [AllowAnonymous]
+    [HttpPost("requestEmailConfirmation")]
+    public async Task<IActionResult> RequestEmailConfirmation([FromBody] ConfirmEmailRequest emailConfirmationRequest)
+    {
+        var user = await _userManager.FindByEmailAsync(emailConfirmationRequest.Email);
+        if (user is null )
+            return BadRequest();
+
+        if (user.EmailConfirmed) return Ok("email is already confirmed!");
+
+        var confirmationLink = await GenerateEmailConfirmationLink(user);
+        //TODO send the email not return it in the request!
+
+        return Ok(confirmationLink);
+    }
+
+    [HttpGet]
+    [AllowAnonymous]
+    [HttpGet("ConfirmEmail")]
+    public async Task<IActionResult> ConfirmEmail(string userId, string token)
+    {
+        if (String.IsNullOrEmpty(userId) || String.IsNullOrEmpty(token))
+        {
+            return BadRequest(new { message = "Invalid request. User ID and token are required." });
+        }
+
+        var user = await _userManager.FindByIdAsync(userId);
+
+        if (user == null)
+        {
+            return NotFound(new { message = "User not found." });
+        }
+
+        token = Uri.UnescapeDataString(token);
+        var result = await _userManager.ConfirmEmailAsync(user, token);
+
+        if (result.Succeeded)
+        {
+            return Ok(new EmailConfirmationResponse("Email confirmed successfully." ));
+        }
+        else
+        {
+            return BadRequest(new EmailConfirmationResponse("Email confirmation failed." ));
+        }
+    }
 
     [Authorize]
     [HttpGet("currentuser")]
