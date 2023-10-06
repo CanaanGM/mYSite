@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 
@@ -18,12 +19,10 @@ public class PostRepo : IPostRepo
     private readonly BlogContext _context;
     private readonly ILogger<PostRepo> _logger;
     private readonly IMapper _mapper;
-    private readonly ITagRepo _tagRepo;
 
-    public PostRepo(BlogContext context, ILogger<PostRepo> logger, IMapper mapper, ITagRepo tagRepo)
+    public PostRepo(BlogContext context, ILogger<PostRepo> logger, IMapper mapper)
     {
         _mapper = mapper;
-        _tagRepo = tagRepo;
         _logger = logger;
         _context = context;
     }
@@ -47,18 +46,23 @@ public class PostRepo : IPostRepo
     }
 
     public async Task<Result<PagedList<PostReadDto>>> GetAll(
-        int page = 1,
-        int pageSize = 10,
-        string? searchTerm = null,
-        string sortBy = "Id",
-        bool isSortAscending = true)
+     int page = 1,
+     int pageSize = 10,
+     string? searchTerm = null,
+     string sortBy = "publish_date",
+     bool isSortAscending = true,
+     string? filterValue = null,
+     string? filterType = null)
     {
         try
         {
             var query = _context.Posts
                 .AsNoTracking();
 
-            // Filtering
+            // Apply filtering based on filter type
+            ApplyFilter(ref query, filterValue, filterType);
+
+            // Apply additional filtering based on search term
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 query = query.Where(p =>
@@ -66,22 +70,13 @@ public class PostRepo : IPostRepo
                     p.Content.Contains(searchTerm));
             }
 
-            // Sorting
-            string sortOrder = isSortAscending ? "ASC" : "DESC";
-            // will be an object later
-            string orderBy = sortBy.ToLower() switch
-            {
-                "title" => "Title",
-                "content" => "Content",
-                _ => "Id",
-            };
+            // Apply dynamic sorting
+            ApplySorting(ref query, sortBy, isSortAscending);
 
             // Paging
             var totalCount = await query.CountAsync();
-
             var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
             var posts = await query
-
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ProjectTo<PostReadDto>(_mapper.ConfigurationProvider)
@@ -102,6 +97,38 @@ public class PostRepo : IPostRepo
             return Result<PagedList<PostReadDto>>.Failure($"ERROR: {ex.Message}", OperationStatus.Error);
         }
     }
+
+    private void ApplyFilter(ref IQueryable<Post> query, string filterValue, string filterType)
+    {
+        if (!string.IsNullOrEmpty(filterType) && !string.IsNullOrEmpty(filterValue))
+        {
+            query = filterType.ToLower() switch
+            {
+                "tag" => query
+                    .Where(p => p.PostTags.Any(pt => pt.Tag.Name == filterValue)), 
+                "category" => query
+                    .Where(p => p.PostCategories.Any(pc => pc.Category.Name == filterValue)), 
+                _ => query, // Handle other filter types or do nothing for invalid types.
+            };
+        }
+    }
+
+
+    private void ApplySorting(ref IQueryable<Post> query, string sortBy, bool isSortAscending)
+    {
+        var propertyMap = new Dictionary<string, Expression<Func<Post, object>>>
+        {
+            ["title"] = p => p.Title,
+            ["content"] = p => p.Content,
+            ["publish_date"] = p => p.PublishDate,
+        };
+
+        if (propertyMap.TryGetValue(sortBy.ToLower(), out var orderBy))
+        {
+            query = isSortAscending ? query.OrderBy(orderBy) : query.OrderByDescending(orderBy);
+        }
+    }
+
 
     public async Task<Result<PostReadDto>> UpsertPost(Guid postId, PostUpsertDto postDto)
     {
@@ -251,4 +278,6 @@ public class PostRepo : IPostRepo
                     });
         }
     }
+
+
 }

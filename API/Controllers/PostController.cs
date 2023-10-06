@@ -24,23 +24,18 @@ public class PostController : ControllerBase
         _postRepo = postRepo;
     }
 
-    [HttpGet("pageSize,page,searchTerm,sortBy,isAscSort")]
-    public async Task<IActionResult> Get(
-        int pageSize = 5,
-        int page = 1,
-        string? searchTerm = null,
-        string sortBy = "Id",
-        bool isAscSort = true
-    )
+    [HttpGet("")]
+    public async Task<IActionResult> GetAllPosts(
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 10,
+    [FromQuery] string? searchTerm = null,
+    [FromQuery] string sortBy = "Id",
+    [FromQuery] bool isSortAscending = true,
+    [FromQuery] string? filterValue = null,
+    [FromQuery] string? filterType = null )
     {
-        var posts = await _postRepo.GetAll(
-            pageSize: pageSize,
-            page: page,
-            searchTerm: searchTerm,
-            sortBy: sortBy,
-            isSortAscending: isAscSort
-
-            );
+        
+        var posts = await _postRepo.GetAll(page, pageSize, searchTerm, sortBy, isSortAscending, filterValue, filterType);
 
         return posts.Operation switch
         {
@@ -52,6 +47,7 @@ public class PostController : ControllerBase
             _ => BadRequest()
         };
     }
+
 
     [HttpGet("{slug}")]
     public async Task<IActionResult> GetPost(string slug)
