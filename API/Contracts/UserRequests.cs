@@ -15,3 +15,5 @@ public record UserRegisterRequest(
 public record UserNameCheckRequest(string Username);
 public record EmailCheckRequest(string Email);
 public record ConfirmEmailRequest(string Email);
+public record PasswordResetRequest(string Verifier);
+public record PasswordChangeRequest(string newPassword);

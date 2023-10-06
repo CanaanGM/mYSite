@@ -46,22 +46,15 @@ public class AccountController : ControllerBase
             return ValidationProblem();
         }
 
+        await _userManager.AddToRoleAsync(user, "User");
+
         // TODO: email body generation
-        string confirmationLink = await GenerateEmailConfirmationLink(user);
+        var emailConfirmToken = Uri.EscapeDataString(await _userManager.GenerateEmailConfirmationTokenAsync(user));
+        string confirmationLink =  GenerateConfirmationLink(user, emailConfirmToken, nameof(ConfirmEmail));
 
         return CreatedAtAction(nameof(Register), new RegisterResponse(confirmationLink));
     }
 
-    private async Task<string> GenerateEmailConfirmationLink(User user)
-    {
-        var emailConfirmToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        emailConfirmToken = Uri.EscapeDataString(emailConfirmToken);
-
-        // <Request.Scheme> :// <Request.Host> /api/auth/ConfirmEmail?userId=user.Id&token=emailConfirmationToken
-        var confirmationLink = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/auth/ConfirmEmail?userId={user.Id}&token={emailConfirmToken}";
-        await _userManager.AddToRoleAsync(user, "User");
-        return confirmationLink;
-    }
 
     [HttpPost("login")]
     public async Task<IActionResult> Login(UserLoginRequest userCreds)
@@ -83,8 +76,46 @@ public class AccountController : ControllerBase
     }
 
     // todo
-    // password confirmation request
-    // password confirmation
+    // TODO: Think about this more carefully, it maybe a threat 
+    // password Rest request
+    [AllowAnonymous]
+    [HttpPost("requestPasswordReset")]
+    public async Task<IActionResult> PasswordResetRequest(PasswordResetRequest resetRequest)
+    {
+        if (String.IsNullOrEmpty(resetRequest.Verifier))
+            return BadRequest("provider a valid verifier");
+
+        var user = await _userManager.FindByEmailAsync(resetRequest.Verifier) 
+            ??     await _userManager.FindByNameAsync(resetRequest.Verifier);
+
+        if (user is null) return BadRequest("verifier is incorrect, please double check and try again");
+
+        var passwordResetToken =  Uri.EscapeDataString(await _userManager.GeneratePasswordResetTokenAsync(user));
+        var confirmationLink = GenerateConfirmationLink(user, passwordResetToken, nameof(PasswordReset));
+
+        // TODO: send as email yo
+        return Ok(confirmationLink);
+    }
+
+    // password Rest
+    [AllowAnonymous]
+    [HttpPost("passwordReset")]
+    public async Task<IActionResult> PasswordReset(string userId, string token, [FromBody] PasswordChangeRequest passwordRequest)
+    {
+        if (String.IsNullOrEmpty(userId)
+         || String.IsNullOrEmpty(token)
+         || String.IsNullOrEmpty(passwordRequest.newPassword))
+        return BadRequest(new { message = "Invalid request. User ID and token are required." });
+        
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null) 
+            return BadRequest("Double check the values you've provided please.");
+
+        var result = await _userManager.ResetPasswordAsync(user, token, passwordRequest.newPassword);
+        return  result.Succeeded 
+            ?  Ok("Success!\nPlease login again.")
+            : BadRequest("Something went wrong please try again later");
+    }
 
     // Email confirmation request
 
@@ -96,11 +127,13 @@ public class AccountController : ControllerBase
         if (user is null )
             return BadRequest();
 
-        if (user.EmailConfirmed) return Ok("email is already confirmed!");
+        if (user.EmailConfirmed)
+            return Ok("email is already confirmed!");
 
-        var confirmationLink = await GenerateEmailConfirmationLink(user);
+        var emailConfirmToken = Uri.EscapeDataString(await _userManager.GenerateEmailConfirmationTokenAsync(user));
+        var confirmationLink =  GenerateConfirmationLink(user, emailConfirmToken, nameof(ConfirmEmail));
+        
         //TODO send the email not return it in the request!
-
         return Ok(confirmationLink);
     }
 
@@ -176,4 +209,14 @@ public class AccountController : ControllerBase
             ? Ok(new EmailCheckResponse(isAvailable: false, message: "Email is not available! ;=;"))
             : Ok(new EmailCheckResponse(isAvailable: true, message: "Email is available! :D"));
     }
+    private string GenerateConfirmationLink(User user, string emailConfirmToken, string controllerName)
+    {
+
+        // <Request.Scheme> :// <Request.Host> /api/auth/ConfirmEmail?userId=user.Id&token=emailConfirmationToken
+        var confirmationLink = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/auth/{controllerName}?userId={user.Id}&token={emailConfirmToken}";
+        return confirmationLink;
+    }
+
+
+
 }
