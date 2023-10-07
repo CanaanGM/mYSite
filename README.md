@@ -1,12 +1,14 @@
 # Repo for my site
 
-> basically the second iteration of my site's backend, this time using an ORM:
+> basically the second iteration of my site's backend, this time using an ORM and :
 
 - c#
 - entity core instead of Dapper
 - sql server instead of postgres
 
 ---
+
+## this's still a Work in progress ; meaning u'll find stupid un-optimized stuff in here
 
 ## Still TODO
 
@@ -24,7 +26,7 @@
 - [X] Account Management
   - [X] Password reset
   - [X] Email Verification
-- [ ] create a post
+- [ ] create a post, as in choose a text editor technology, candidate is [EditorJs](https://editorjs.io/)
   - [ ] image upload for post creation
 - [ ] think of more stuff !
 - [ ] tests
