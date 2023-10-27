@@ -38,7 +38,7 @@ var app = builder.Build();
     app.UseExceptionHandler("/error");
 
     app.UseCors("CorsPolicy");
-    app.UseHttpsRedirection();
+    //app.UseHttpsRedirection();
 
     app.UseAuthentication(); // hi, I AM b4 AUTHORIZATION !
     app.UseAuthorization(); // hi, I AM AUTHORIZATION !

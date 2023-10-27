@@ -60,7 +60,12 @@ namespace API.Extensions
                           .WithOrigins("http://localhost:5174")
                           .WithOrigins("http://localhost:3000")
                           .WithOrigins("http://localhost:5173")
-                          .WithOrigins("http://localhost:5175");
+                          .WithOrigins("http://localhost:5175")
+                          .WithOrigins("http://localhost:4321")
+                          .WithOrigins("http://localhost:4322")
+
+
+                          ;
                     })
             );
 

@@ -228,7 +228,7 @@ public class PostRepo : IPostRepo
         foreach (var tag in tags)
         {
             var existingTag = await _context.Tags
-                .SingleOrDefaultAsync(t => t.Name == tag.Name);
+                .SingleOrDefaultAsync(t => t.Name == tag.Name.Trim().Replace(' ', '-'));
 
             if (existingTag is null)
             {
@@ -255,7 +255,7 @@ public class PostRepo : IPostRepo
         foreach (var category in categories)
         {
             var existingCat = await _context.Categories
-                .SingleOrDefaultAsync(t => t.Name == category.Name);
+                .SingleOrDefaultAsync(t => t.Name == category.Name.Trim().Replace(' ', '-'));
 
             if (existingCat is null)
             {

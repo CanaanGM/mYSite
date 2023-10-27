@@ -29,7 +29,7 @@ public class PostController : ControllerBase
     [FromQuery] int page = 1,
     [FromQuery] int pageSize = 10,
     [FromQuery] string? searchTerm = null,
-    [FromQuery] string sortBy = "Id",
+    [FromQuery] string sortBy = "content",
     [FromQuery] bool isSortAscending = true,
     [FromQuery] string? filterValue = null,
     [FromQuery] string? filterType = null )
