@@ -18,7 +18,8 @@ public static class DependencyInjection
     {
         services.AddDbContext<BlogContext>(opt =>
         {
-            opt.UseSqlServer(configuration["ConnectionStrings:SqlServer"]);
+            //opt.UseSqlServer(configuration["ConnectionStrings:SqlServer"]);
+            opt.UseNpgsql(configuration["ConnectionStrings:Postgres"]);
         });
 
         services.AddScoped<IPostRepo, PostRepo>();
@@ -34,7 +35,10 @@ public static class DependencyInjection
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<BlogContext>()
             .AddDefaultTokenProviders()
+            
             ;
+
+       
 
         return services;
     }
