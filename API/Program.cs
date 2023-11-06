@@ -8,9 +8,13 @@ using DataAccess;
 
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 
+using System.Text.Json.Serialization;
+
 var builder = WebApplication.CreateBuilder(args);
 {
-    builder.Services.AddControllers();
+    builder.Services.AddControllers().AddJsonOptions(x =>
+                x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+    ;
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
 
@@ -44,6 +48,17 @@ var app = builder.Build();
     app.UseAuthorization(); // hi, I AM AUTHORIZATION !
 
     app.MapControllers();
+
+    try
+    {
+        DatabaseInitiliazer.InitDb(app);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("Add me to a proper logger damn u!!!");
+        Console.WriteLine(ex);
+
+    }
 
     app.Run();
 }

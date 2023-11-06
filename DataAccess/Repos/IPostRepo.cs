@@ -15,6 +15,8 @@ namespace DataAccess.Repos
          bool isSortAscending = true,
          string? filterValue = null,
          string? filterType = null);
+        Task<Result<Dictionary<string, List<PostReadDto>>>> GetAllPostsGroupedByCategory();
+        Task<Result<List<ArchivePostDto>>> GetArchivePosts();
         Task<Result<PostReadDto>> GetBySlug(string slug);
         Task<Result<PostReadDto>> UpsertPost(Guid postId, PostUpsertDto postDto);
     }

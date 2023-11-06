@@ -1,4 +1,6 @@
 
+using Application.Dtos;
+
 namespace API.Contracts;
 
 public record PostResponse<T>(
@@ -6,3 +8,7 @@ public record PostResponse<T>(
     T Value
 );
 
+
+public record GroupedPostsResponse(
+    Dictionary<string, PostReadDto> Posts
+    );

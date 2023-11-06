@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
@@ -9,6 +10,7 @@ using DataAccess.Utilities;
 using Domain.Entities;
 using Domain.Shared;
 
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -45,6 +47,67 @@ public class PostRepo : IPostRepo
         }
     }
 
+
+    public async Task<Result<List<ArchivePostDto>>> GetArchivePosts()
+    {
+        var res = await  _context.Posts.ToListAsync();
+
+        try
+        {
+            if (res == null)
+                return Result<List<ArchivePostDto>>.Failure("No Posts found", OperationStatus.NotFound);
+
+            return Result <List<ArchivePostDto>>.Success( _mapper.Map<List<ArchivePostDto>>(res));
+
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"ERROR: {ex.Message}", ex);
+            return Result<List<ArchivePostDto>>.Failure($"ERROR: {ex.Message}", OperationStatus.Error);
+        }
+    }
+
+    public async Task<Result<Dictionary<string, List<PostReadDto>>>> GetAllPostsGroupedByCategory()
+    {
+        try
+        {
+
+            var res = await _context.Posts
+            .Include(p=>p.PostCategories)
+            .ProjectTo<PostReadDto>(_mapper.ConfigurationProvider)
+            .ToListAsync();
+
+            if (res == null)
+                    return Result<Dictionary<string, List<PostReadDto>>>.Failure("No Posts found", OperationStatus.NotFound);
+
+                var groupedPosts = new Dictionary<string, List<PostReadDto>>();
+            foreach (var post in res)
+            {
+                foreach (var catName in post.Categories)
+                {
+
+                    if (!groupedPosts.ContainsKey(catName) )
+                    {
+                        groupedPosts[catName] = new List<PostReadDto>() { post};
+
+                    }
+                    else
+                        groupedPosts[catName].Add(post);
+                }
+            }
+
+
+
+            return Result<Dictionary<string, List<PostReadDto>>>.Success(groupedPosts);
+
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"ERROR: {ex.Message}", ex);
+            return Result<Dictionary<string, List<PostReadDto>>>.Failure($"ERROR: {ex.Message}", OperationStatus.Error);
+        }
+    }
+
     public async Task<Result<PagedList<PostReadDto>>> GetAll(
      int page = 1,
      int pageSize = 10,
@@ -58,6 +121,9 @@ public class PostRepo : IPostRepo
         {
             var query = _context.Posts
                 .AsNoTracking();
+
+            if (pageSize > 10 || pageSize < 1)
+                pageSize = 10;
 
             // Apply filtering based on filter type
             if (!string.IsNullOrEmpty(filterType) && !string.IsNullOrEmpty(filterValue))
@@ -75,13 +141,13 @@ public class PostRepo : IPostRepo
             ApplySorting(ref query, sortBy, isSortAscending);
 
             // Paging
-            var totalCount = await query.CountAsync();
-            var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
             var posts = await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ProjectTo<PostReadDto>(_mapper.ConfigurationProvider)
                 .ToListAsync();
+            var totalCount = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 
             var result = new PagedList<PostReadDto>(
                 data: posts,
@@ -276,6 +342,8 @@ public class PostRepo : IPostRepo
                     });
         }
     }
+
+
 
 
 }

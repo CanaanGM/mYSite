@@ -5,6 +5,7 @@ using Application.Security;
 using DataAccess.Dtos;
 using DataAccess.Repos;
 
+using Domain.Entities;
 using Domain.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -29,7 +30,7 @@ public class PostController : ControllerBase
     [FromQuery] int page = 1,
     [FromQuery] int pageSize = 10,
     [FromQuery] string? searchTerm = null,
-    [FromQuery] string sortBy = "content",
+    [FromQuery] string sortBy = "publish_date",
     [FromQuery] bool isSortAscending = true,
     [FromQuery] string? filterValue = null,
     [FromQuery] string? filterType = null )
@@ -39,10 +40,35 @@ public class PostController : ControllerBase
 
         return posts.Operation switch
         {
-            OperationStatus.Success => Ok(new PostResponse<PagedList<PostReadDto>>(
-                    posts.Operation.ToString(),
-                      posts.Value
-                      )),
+            OperationStatus.Success => Ok(posts.Value),
+            OperationStatus.Error => Problem(statusCode: 500, detail: "Something went wrong processing your request, please try again later."),
+            _ => BadRequest()
+        };
+    }
+
+    [HttpGet("archive/all")]
+    public async Task<IActionResult> GetPostsForArchive()
+    {
+        var posts = await _postRepo.GetArchivePosts();
+
+        return posts.Operation switch
+        {
+            OperationStatus.Success => Ok(posts.Value),
+            OperationStatus.NotFound => NotFound(),
+            OperationStatus.Error => Problem(statusCode: 500, detail: "Something went wrong processing your request, please try again later."),
+            _ => BadRequest()
+        };
+    }
+
+    [HttpGet("no-pagination/all")]
+    public async Task<IActionResult> GetAllPosts()
+    {
+        var posts = await _postRepo.GetAllPostsGroupedByCategory();
+
+        return posts.Operation switch
+        {
+            OperationStatus.Success => Ok(  posts.Value),
+            OperationStatus.NotFound => NotFound(),
             OperationStatus.Error => Problem(statusCode: 500, detail: "Something went wrong processing your request, please try again later."),
             _ => BadRequest()
         };

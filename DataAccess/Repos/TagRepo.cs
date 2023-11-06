@@ -1,4 +1,8 @@
-﻿using DataAccess.Contexts;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+
+using DataAccess.Contexts;
+using DataAccess.Dtos;
 using DataAccess.Utilities;
 
 using Domain.Entities;
@@ -19,11 +23,39 @@ namespace DataAccess.Repos
         private readonly BlogContext _context;
         private readonly ILogger<TagRepo> _logger;
 
-        public TagRepo(BlogContext context, ILogger<TagRepo> logger)
+        public TagRepo(BlogContext context, ILogger<TagRepo> logger, IMapper mapper)
         {
             _context = context;
             _logger = logger;
+            _mapper = mapper;
         }
+
+        public IMapper _mapper { get; }
+
+        public async Task<Result<List<TagReadDto>>> GetAllTags()
+        {
+            try
+            {
+                var tags = await _context.Tags
+                    .AsNoTracking()
+
+                    //.Include(x=>x.PostTags)
+                    //.ThenInclude(x=>x.Post)
+
+
+                    .ProjectTo<TagReadDto>(_mapper.ConfigurationProvider)
+                    .ToListAsync();
+
+                // 404
+                return Result<List<TagReadDto>>.Success(tags);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"ERROR: {ex.Message}", ex);
+                return Result<List<TagReadDto>>.Failure($"Failed to get or create the tag: {ex.Message}");
+            }
+        }
+
         public async Task<Result<Tag>> GetOrCreateTagAsync(string tagName)
         {
             try
@@ -54,7 +86,26 @@ namespace DataAccess.Repos
             }
         }
 
+        public async Task<Result<TagReadDto>> GetTagById(string name)
+        {
+            try
+            {
+                var tag = await _context.Tags
+                    .AsNoTracking()
+                    .ProjectTo<TagReadDto>(_mapper.ConfigurationProvider)
+                    .FirstOrDefaultAsync(x => x.Name == name);
+                    ;
 
+                // 404 implement powlease
+                return Result<TagReadDto>.Success(tag);
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"ERROR: {ex.Message}", ex);
+                return Result<TagReadDto>.Failure($"Failed to get or create the tag: {ex.Message}");
+            }
+        }
     }
 
 
