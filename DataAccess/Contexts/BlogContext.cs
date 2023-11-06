@@ -70,14 +70,14 @@ public class BlogContext : IdentityDbContext<User>
 
         modelBuilder.Entity<Post>()
             .Property(c => c.CreatedAt)
-            .HasDefaultValueSql("GetDate()");
+            .HasDefaultValueSql("NOW()");
 
         //modelBuilder.Entity<Post>()
         //    .HasQueryFilter(p => p.IsPublished);
 
         modelBuilder.Entity<Tag>()
             .Property(c => c.CreatedAt)
-            .HasDefaultValueSql("GetDate()");
+            .HasDefaultValueSql("NOW()");
 
         modelBuilder.Entity<Tag>()
             .HasIndex(t => t.Name)
@@ -85,7 +85,7 @@ public class BlogContext : IdentityDbContext<User>
 
         modelBuilder.Entity<Category>()
             .Property(c => c.CreatedAt)
-            .HasDefaultValueSql("GetDate()");
+            .HasDefaultValueSql("NOW()");
 
         modelBuilder.Entity<Category>()
             .HasIndex(t => t.Name)
