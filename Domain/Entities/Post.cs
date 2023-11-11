@@ -23,4 +23,7 @@ public class Post
 
     public ICollection<PostTag> PostTags { get; set; }
     public ICollection<PostCategory> PostCategories { get; set; }
+
+    public ICollection<Comment> Comments { get; set; }
+
 }

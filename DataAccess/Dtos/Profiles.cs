@@ -1,5 +1,7 @@
 using AutoMapper;
 
+using DataAccess.Entities;
+
 using Domain.Entities;
 
 namespace DataAccess.Dtos;
@@ -33,6 +35,17 @@ public class Profiles : Profile
 
         CreateMap<Category, CategoryReadDto>().ReverseMap();
         CreateMap<Category, CategoryUpsertDto>().ReverseMap();
+
+
+        CreateMap<Comment, CommentCreateDto>().ReverseMap();
+        CreateMap<Comment, CommentUpdateDto>().ReverseMap();
+        CreateMap<Comment, CommentReadDto>().ReverseMap();
+
+        CreateMap<User, UserReadDto>().ReverseMap();
+        CreateMap<User, CommentReadDto>()
+            .ForMember(x => x.UserName, opt => opt.MapFrom(a => a.UserName))
+            .ForMember(x => x.Email, opt => opt.MapFrom(a => a.Email))
+            .ForMember(x => x.ProfilePicture, opt => opt.MapFrom(a => a.ProfilePicture));
 
 
     }

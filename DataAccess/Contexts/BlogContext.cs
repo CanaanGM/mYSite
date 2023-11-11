@@ -1,3 +1,5 @@
+// Ignore Spelling: Blog
+
 namespace DataAccess.Contexts;
 
 using DataAccess.Entities;
@@ -14,6 +16,7 @@ public class BlogContext : IdentityDbContext<User>
     public DbSet<Tag> Tags { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<PostTag> PostTags { get; set; }
+    public DbSet<Comment> Comments { get; set; }
 
     public BlogContext()
     {
@@ -65,6 +68,11 @@ public class BlogContext : IdentityDbContext<User>
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Post>()
+            .HasMany(p => p.Comments)
+            .WithOne(c => c.Post)
+            .HasForeignKey(c => c.PostId);
+
+        modelBuilder.Entity<Post>()
             .HasIndex(p => p.Slug)
             .IsUnique();
 
@@ -90,5 +98,27 @@ public class BlogContext : IdentityDbContext<User>
         modelBuilder.Entity<Category>()
             .HasIndex(t => t.Name)
             .IsUnique();
+
+
+        modelBuilder.Entity<Comment>()
+            .HasOne(x => x.Parent)
+            .WithMany(x => x.Replies)
+            .HasForeignKey(x => x.parentId);
+
+        modelBuilder.Entity<Comment>()
+            .HasIndex(x => x.Id)
+            .IsUnique();
+
+        modelBuilder.Entity<Comment>()
+            .HasIndex(x => x.AuthorId);
+
+        modelBuilder.Entity<Comment>()
+            .HasIndex(x => x.parentId);
+
+        modelBuilder.Entity<Comment>()
+            .HasIndex(x => x.PostId);
+
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.Comments);
     }
 }

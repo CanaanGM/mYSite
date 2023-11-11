@@ -3,23 +3,27 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API", "API\API.csproj", "{52F981E2-3112-4F01-B061-2FF20904D453}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "API", "API\API.csproj", "{52F981E2-3112-4F01-B061-2FF20904D453}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "Application\Application.csproj", "{6CA96E1C-33B4-4472-9F1E-CFEFEC2E03A7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application", "Application\Application.csproj", "{6CA96E1C-33B4-4472-9F1E-CFEFEC2E03A7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CLI", "CLI\CLI.csproj", "{F7F14D54-5089-44EF-8466-D8AE2343D5F1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CLI", "CLI\CLI.csproj", "{F7F14D54-5089-44EF-8466-D8AE2343D5F1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess", "DataAccess\DataAccess.csproj", "{F7A406E5-C865-4788-A002-5D0C16857D16}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataAccess", "DataAccess\DataAccess.csproj", "{F7A406E5-C865-4788-A002-5D0C16857D16}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csproj", "{B0859E73-6C9A-4576-A763-BD99B361A12E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain", "Domain\Domain.csproj", "{B0859E73-6C9A-4576-A763-BD99B361A12E}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{C044D40E-A8D8-409D-AA43-C14E6F322771}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B64D4440-C3FF-4C48-AA0A-2FC79A6B7786}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{52F981E2-3112-4F01-B061-2FF20904D453}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -42,5 +46,12 @@ Global
 		{B0859E73-6C9A-4576-A763-BD99B361A12E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B0859E73-6C9A-4576-A763-BD99B361A12E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B0859E73-6C9A-4576-A763-BD99B361A12E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C044D40E-A8D8-409D-AA43-C14E6F322771}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C044D40E-A8D8-409D-AA43-C14E6F322771}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C044D40E-A8D8-409D-AA43-C14E6F322771}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C044D40E-A8D8-409D-AA43-C14E6F322771}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal

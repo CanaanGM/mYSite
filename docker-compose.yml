@@ -1,0 +1,31 @@
+version: '3.4'
+
+services:
+  api:
+    image: divieon/blog:latest
+    build:
+      context: .
+      dockerfile: API/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__Postgres=Server=blog_postgres;Port=5432;User Id=admin;Password=admin1234e;Database=blog
+    ports:
+      - 6969:80
+
+    depends_on:
+      - blog_postgres
+
+  blog_postgres:
+    image: postgres
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin1234e
+    ports:
+      - "5434:5432"
+    volumes:
+      - ./blog_db-data:/var/lib/postgresql/data/
+    container_name: blog_database
+
+volumes:
+  blog_db-data:

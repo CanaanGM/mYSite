@@ -1,3 +1,5 @@
+// Ignore Spelling: Sert jwt Repo
+
 using API.Contracts;
 
 using Application.Security;
@@ -104,7 +106,7 @@ public class PostController : ControllerBase
             });
         return res.Operation switch
         {
-            OperationStatus.Created => CreatedAtAction(nameof(Create), new { id = res.Value.Id }, res.Value),
+            OperationStatus.Created => CreatedAtAction(nameof(GetPost), new { slug = res.Value.Slug}, res.Value),
             OperationStatus.Updated => NoContent(),
             OperationStatus.Error => Problem(statusCode: 500, detail: "Something went wrong processing your request, please try again later."),
             _ => BadRequest()
@@ -125,7 +127,7 @@ public class PostController : ControllerBase
             });
         return res.Operation switch
         {
-            OperationStatus.Created => CreatedAtAction(nameof(Create), new { id = res.Value.Id }, res.Value),
+            OperationStatus.Created => CreatedAtAction(nameof(GetPost), new { slug = res.Value.Slug }, res.Value),
             OperationStatus.Error => Problem(statusCode: 500, detail: "Something went wrong processing your request, please try again later."),
             _ => BadRequest()
         };

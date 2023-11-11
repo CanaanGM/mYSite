@@ -55,6 +55,7 @@ var app = builder.Build();
     }
     catch (Exception ex)
     {
+        // add a retry mechanism
         Console.WriteLine("Add me to a proper logger damn u!!!");
         Console.WriteLine(ex);
 

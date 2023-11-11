@@ -13,5 +13,5 @@ public class Category
     public DateTime CreatedAt { get; set; }
     public DateTime LastModifiedAt { get; set; }
 
-    public ICollection<PostCategory> CategoryPosts { get; set; }
+    public ICollection<PostCategory>? CategoryPosts { get; set; } 
 }

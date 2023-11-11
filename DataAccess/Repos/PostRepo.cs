@@ -1,3 +1,5 @@
+// Ignore Spelling: Repo
+
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using AutoMapper;
@@ -133,8 +135,10 @@ public class PostRepo : IPostRepo
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 query = query.Where(p =>
-                    p.Title.Contains(searchTerm) ||
-                    p.Content.Contains(searchTerm));
+                    p.Title.Contains(searchTerm)
+                    ||p.Content.Contains(searchTerm)
+                    
+                    );
             }
 
             // Apply dynamic sorting
