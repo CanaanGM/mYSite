@@ -179,33 +179,6 @@ public class PostRepo : IPostRepo
         }
     }
 
-    private void ApplyFilter(ref IQueryable<Post> query, string filterValue, string filterType)
-    {
-            query = filterType.ToLower() switch
-            {
-                "tag" => query
-                    .Where(p => p.PostTags.Any(pt => pt.Tag.Name == filterValue)), 
-                "category" => query
-                    .Where(p => p.PostCategories.Any(pc => pc.Category.Name == filterValue)), 
-                _ => query, 
-            };
-    }
-
-
-    private void ApplySorting(ref IQueryable<Post> query, string sortBy, bool isSortAscending)
-    {
-        var propertyMap = new Dictionary<string, Expression<Func<Post, object>>>
-        {
-            ["title"] = p => p.Title,
-            ["content"] = p => p.Content,
-            ["publish_date"] = p => p.PublishDate,
-        };
-
-        if (propertyMap.TryGetValue(sortBy.ToLower(), out var orderBy))
-        {
-            query = isSortAscending ? query.OrderBy(orderBy) : query.OrderByDescending(orderBy);
-        }
-    }
 
 
     public async Task<Result<PostReadDetailsDto>> UpsertPost(string authorId, Guid? postId, PostUpsertDto postDto)
@@ -390,6 +363,33 @@ public class PostRepo : IPostRepo
     }
 
 
+    private void ApplyFilter(ref IQueryable<Post> query, string filterValue, string filterType)
+    {
+        query = filterType.ToLower() switch
+        {
+            "tag" => query
+                .Where(p => p.PostTags.Any(pt => pt.Tag.Name == filterValue)),
+            "category" => query
+                .Where(p => p.PostCategories.Any(pc => pc.Category.Name == filterValue)),
+            _ => query,
+        };
+    }
+
+
+    private void ApplySorting(ref IQueryable<Post> query, string sortBy, bool isSortAscending)
+    {
+        var propertyMap = new Dictionary<string, Expression<Func<Post, object>>>
+        {
+            ["title"] = p => p.Title,
+            ["content"] = p => p.Content,
+            ["publish_date"] = p => p.PublishDate,
+        };
+
+        if (propertyMap.TryGetValue(sortBy.ToLower(), out var orderBy))
+        {
+            query = isSortAscending ? query.OrderBy(orderBy) : query.OrderByDescending(orderBy);
+        }
+    }
 
 
 }
