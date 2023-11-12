@@ -87,7 +87,7 @@ namespace DataAccess.Repos
             }
         }
 
-        public async Task<Result<TagReadDto>> GetTagById(string name)
+        public async Task<Result<TagReadDto>> GetTagByName(string name)
         {
             try
             {

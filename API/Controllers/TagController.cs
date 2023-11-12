@@ -33,7 +33,7 @@ namespace API.Controllers
         [HttpGet("{Name}")]
         public async Task<IActionResult> GetTagByName(string name)
         {
-            var tag = await _repo.GetTagById(name);
+            var tag = await _repo.GetTagByName(name);
             return tag.Operation switch
             {
                 OperationStatus.Success => Ok(tag.Value),

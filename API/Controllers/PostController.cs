@@ -92,8 +92,8 @@ public class PostController : ControllerBase
     }
 
     [Authorize(Roles = "Admin, User")]
-    [HttpPost("{id:Guid}")]
-    public async Task<IActionResult> UpSert(Guid id, [FromBody] PostUpsertRequest post)
+    [HttpPost]
+    public async Task<IActionResult> UpSert( [FromBody] PostUpsertRequest post)
     {
         var authorId = _userAccessor.GetUserId();
 
@@ -101,7 +101,7 @@ public class PostController : ControllerBase
 
         var res = await _postRepo.UpsertPost(
             authorId,
-            id,
+            post.Id,
             new PostUpsertDto
             {
                 Title = post.Title,
@@ -121,14 +121,14 @@ public class PostController : ControllerBase
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpDelete("{id:Guid}")]
+    [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
         var authorId = _userAccessor.GetUserId();
 
         if (authorId is null) return Unauthorized();
 
-        var res = await _postRepo.Delete(id);
+        var res = await _postRepo.SoftDelete(id);
         return res.Operation switch
         {
             OperationStatus.Deleted => NoContent(),

@@ -8,6 +8,6 @@ namespace DataAccess.Repos
     {
         Task<Result<List<TagReadDto>>> GetAllTags();
         Task<Result<Tag>> GetOrCreateTagAsync(string tagName);
-        Task<Result<TagReadDto>> GetTagById(string name);
+        Task<Result<TagReadDto>> GetTagByName(string name);
     }
 }

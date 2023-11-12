@@ -18,8 +18,12 @@ public class Profiles : Profile
 
         CreateMap<Post, ArchivePostDto>();
         CreateMap<Post, PostReadWithTag>();
+        CreateMap<Post, PostUpsertDto>().ReverseMap();
 
-        CreateMap<Tag, TagReadDto>();
+
+        CreateMap<Tag, TagReadDto>()
+            .ForMember(x => x.Posts, opt => opt.MapFrom(x => x.PostTags.Select(c => c.Post)))
+            ;
 
         CreateMap<Category, CategoryReadDto>();
 

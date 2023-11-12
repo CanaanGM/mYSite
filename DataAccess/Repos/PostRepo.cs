@@ -50,12 +50,6 @@ public class PostRepo : IPostRepo
 
             if(post is null ) return Result<PostReadDetailsDto>.Success(new PostReadDetailsDto());
 
-            //var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == post.AuthorId);
-
-            //if (user is null || user.Id != post.AuthorId)
-            //    Result<PostReadDto>.Failure("Something went wrong . . .", OperationStatus.Error);
-
-
             return Result<PostReadDetailsDto>.Success( _mapper.Map<PostReadDetailsDto>( post));
         }
         catch (Exception ex)
@@ -214,7 +208,7 @@ public class PostRepo : IPostRepo
     }
 
 
-    public async Task<Result<PostReadDetailsDto>> UpsertPost(string authorId, Guid postId, PostUpsertDto postDto)
+    public async Task<Result<PostReadDetailsDto>> UpsertPost(string authorId, Guid? postId, PostUpsertDto postDto)
     {
 
         var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == authorId);
@@ -303,7 +297,28 @@ public class PostRepo : IPostRepo
         }
     }
 
-    public async Task<Result<bool>> Delete(Guid postId)
+    public async Task<Result<bool>> SoftDelete(Guid postId)
+    {
+        try
+        {
+            var post = await _context.Posts.FirstAsync(p => p.Id == postId);
+
+            post.IsSoftDeleted = true;
+
+            var res = await _context.SaveChangesAsync() > 0 ;
+
+            
+            return res 
+                ? Result<bool>.Success(true, OperationStatus.Deleted)
+                : Result<bool>.Failure("problem deleting", OperationStatus.Error);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"ERROR: {ex.Message}", ex);
+            return Result<bool>.Failure($"ERROR: {ex.Message}", OperationStatus.Error);
+        }
+    }
+    public async Task<Result<bool>> HardDelete(Guid postId)
     {
         try
         {
