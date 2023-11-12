@@ -21,10 +21,7 @@ namespace DataAccess.Dtos
         public bool Active { get; set; }
         public Guid PostId { get; set; }
         public Guid? ParentId { get; set; }
-        public string AuthorId { get; set; } = null!;
-        public string UserName { get; set; } = null!;
-        public string Email { get; set; } = null!;
-        public string? ProfilePicture { get; set; }
+        public UserReadDto Author { get; set; } = null!;
         public DateTimeOffset Created { get; set; }
         public DateTimeOffset Updated { get; set; }
     }

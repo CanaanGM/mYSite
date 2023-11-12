@@ -1,4 +1,4 @@
-namespace Domain.Shared;
+namespace DataAccess.Shared;
 
 public class PagedList<T>
 {

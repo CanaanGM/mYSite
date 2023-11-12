@@ -1,6 +1,6 @@
 ﻿using DataAccess.Dtos;
-
-using Domain.Entities;
+using DataAccess.Entities;
+using DataAccess.Shared;
 
 namespace DataAccess.Repos
 {

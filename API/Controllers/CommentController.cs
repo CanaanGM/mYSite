@@ -4,6 +4,7 @@ using Application.Security;
 
 using DataAccess.Dtos;
 using DataAccess.Repos;
+using DataAccess.Shared;
 
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;

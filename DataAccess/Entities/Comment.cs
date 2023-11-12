@@ -1,10 +1,11 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Entities
+namespace DataAccess.Entities
 {
     public class Comment
     {
@@ -16,11 +17,8 @@ namespace Domain.Entities
         public Guid? parentId { get; set; }
         public Comment? Parent { get; set; }
         public List<Comment>? Replies { get; set; }
-
-        public int Likes { get; set; }
-        public int DisLikes { get; set; }
-
         public string? AuthorId { get; set; }
+        public User Author { get; set; } = null!;
         public DateTimeOffset Created { get; set; }
         public DateTimeOffset Updated { get; set; }
     }

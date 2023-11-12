@@ -1,3 +1,8 @@
+// Ignore Spelling: Accessor Username
+
+namespace DataAccess.Shared;
+
+
 public enum OperationStatus
 {
     Success,

@@ -11,17 +11,11 @@ namespace DataAccess.Dtos
 
     public class CategoryReadDto
     {
-        public CategoryReadDto(Guid id, string name, DateTime createdAt, DateTime lastModifiedAt)
-        {
-            Id = id;
-            Name = name;
-            CreatedAt = createdAt;
-            LastModifiedAt = lastModifiedAt;
-        }
+        public Guid Id { get; set; }
+        public string Name { get; set; } = null!;
+        public DateTime CreatedAt { get; set; }
+        public DateTime LastModifiedAt { get; set; }
+        public ICollection<PostReadWithTag> Posts { get; set; }
 
-        public Guid Id { get; }
-        public string Name { get; } = null!;
-        public DateTime CreatedAt { get; }
-        public DateTime LastModifiedAt { get; }
     }
 }

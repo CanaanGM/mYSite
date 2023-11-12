@@ -1,6 +1,5 @@
 ﻿using DataAccess.Repos;
-
-using Domain.Entities;
+using DataAccess.Shared;
 
 using Microsoft.AspNetCore.Mvc;
 

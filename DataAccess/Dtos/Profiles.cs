@@ -2,50 +2,33 @@ using AutoMapper;
 
 using DataAccess.Entities;
 
-using Domain.Entities;
-
 namespace DataAccess.Dtos;
 
 public class Profiles : Profile
 {
     public Profiles()
     {
-        CreateMap<PostReadDto, Post>().ReverseMap()
+        CreateMap<Post, PostReadDetailsDto>()
+             .ForMember(x => x.Tags, opt => opt.MapFrom(x => x.PostTags.Select(x => x.Tag)))
+            .ForMember(x => x.Categories, opt => opt.MapFrom(x => x.PostCategories.Select(x => x.Category)));
 
-         .ForMember(dest => dest.Tags,
-         opt => opt
-         .MapFrom(src => src.PostTags.Select(pt => pt.Tag.Name))
-         )
-         .ForMember(dest => dest.Categories,
-            opt => opt.MapFrom(src =>
-            src.PostCategories.Select(pt => pt.Category.Name)))
-        ;
-        CreateMap<Post, PostUpsertDto>().ReverseMap();
-        CreateMap<Post, ArchivePostDto>().ReverseMap();
-        CreateMap<Post, PostReadWithTag>().ReverseMap();
+        CreateMap<Post, PostGeneralInfoDto>()
+            .ForMember(x => x.Tags, opt => opt.MapFrom(x => x.PostTags.Select(s => s.Tag.Name)))
+            .ForMember(x => x.Categories, opt => opt.MapFrom(x => x.PostCategories.Select(s => s.Category.Name)));
 
-        CreateMap<TagReadDto, Tag>()
-            .ReverseMap()
-            .ForMember(x => x.Posts, opt =>
-                opt.MapFrom(s => s.PostTags.Select(x => x.Post)))
-            ;
-            
-        CreateMap<Tag, TagUpsertDto>().ReverseMap();
+        CreateMap<Post, ArchivePostDto>();
+        CreateMap<Post, PostReadWithTag>();
+
+        CreateMap<Tag, TagReadDto>();
+
+        CreateMap<Category, CategoryReadDto>();
+
+        CreateMap<User, UserReadDto>();
+
+        CreateMap<Comment, CommentReadDto>();
 
 
-        CreateMap<Category, CategoryReadDto>().ReverseMap();
-        CreateMap<Category, CategoryUpsertDto>().ReverseMap();
 
-
-        CreateMap<Comment, CommentCreateDto>().ReverseMap();
-        CreateMap<Comment, CommentUpdateDto>().ReverseMap();
-        CreateMap<Comment, CommentReadDto>().ReverseMap();
-
-        CreateMap<User, UserReadDto>().ReverseMap();
-        CreateMap<User, CommentReadDto>()
-            .ForMember(x => x.UserName, opt => opt.MapFrom(a => a.UserName))
-            .ForMember(x => x.Email, opt => opt.MapFrom(a => a.Email))
-            .ForMember(x => x.ProfilePicture, opt => opt.MapFrom(a => a.ProfilePicture));
 
 
     }

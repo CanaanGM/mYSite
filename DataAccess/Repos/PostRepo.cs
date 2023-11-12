@@ -2,15 +2,17 @@
 
 using System.Collections.Generic;
 using System.Linq.Expressions;
+
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 
 using DataAccess.Contexts;
 using DataAccess.Dtos;
+using DataAccess.Entities;
+using DataAccess.Shared;
 using DataAccess.Utilities;
 
-using Domain.Entities;
-using Domain.Shared;
+
 
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
@@ -31,21 +33,35 @@ public class PostRepo : IPostRepo
         _context = context;
     }
 
-    public async Task<Result<PostReadDto>> GetBySlug(string slug)
+    public async Task<Result<PostReadDetailsDto>> GetBySlug(string slug)
     {
         try
         {
             var post = await _context.Posts
                 .AsNoTracking()
-                .ProjectTo<PostReadDto>(_mapper.ConfigurationProvider)
-                .SingleOrDefaultAsync(p => p.Slug == slug);
+                .Include(w => w.Author)
+                .Include(p => p.Comments)
+                    .ThenInclude(c => c.Author)
+                .Include(x => x.PostTags)
+                    .ThenInclude(x => x.Tag)
+                .Include(x => x.PostCategories)
+                    .ThenInclude(x => x.Category)
+                .SingleOrDefaultAsync(x => x.Slug == slug);
 
-            return Result<PostReadDto>.Success(post);
+            if(post is null ) return Result<PostReadDetailsDto>.Success(new PostReadDetailsDto());
+
+            //var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == post.AuthorId);
+
+            //if (user is null || user.Id != post.AuthorId)
+            //    Result<PostReadDto>.Failure("Something went wrong . . .", OperationStatus.Error);
+
+
+            return Result<PostReadDetailsDto>.Success( _mapper.Map<PostReadDetailsDto>( post));
         }
         catch (Exception ex)
         {
             _logger.LogError($"ERROR: {ex.Message}", ex);
-            return Result<PostReadDto>.Failure($"ERROR: {ex.Message}", OperationStatus.Error);
+            return Result<PostReadDetailsDto>.Failure($"ERROR: {ex.Message}", OperationStatus.Error);
         }
     }
 
@@ -69,20 +85,20 @@ public class PostRepo : IPostRepo
         }
     }
 
-    public async Task<Result<Dictionary<string, List<PostReadDto>>>> GetAllPostsGroupedByCategory()
+    public async Task<Result<Dictionary<string, List<PostGeneralInfoDto>>>> GetAllPostsGroupedByCategory()
     {
         try
         {
 
             var res = await _context.Posts
             .Include(p=>p.PostCategories)
-            .ProjectTo<PostReadDto>(_mapper.ConfigurationProvider)
+            .ProjectTo<PostGeneralInfoDto>(_mapper.ConfigurationProvider)
             .ToListAsync();
 
             if (res == null)
-                    return Result<Dictionary<string, List<PostReadDto>>>.Failure("No Posts found", OperationStatus.NotFound);
+                    return Result<Dictionary<string, List<PostGeneralInfoDto>>>.Failure("No Posts found", OperationStatus.NotFound);
 
-                var groupedPosts = new Dictionary<string, List<PostReadDto>>();
+                var groupedPosts = new Dictionary<string, List<PostGeneralInfoDto>>();
             foreach (var post in res)
             {
                 foreach (var catName in post.Categories)
@@ -90,7 +106,7 @@ public class PostRepo : IPostRepo
 
                     if (!groupedPosts.ContainsKey(catName) )
                     {
-                        groupedPosts[catName] = new List<PostReadDto>() { post};
+                        groupedPosts[catName] = new List<PostGeneralInfoDto>() { post};
 
                     }
                     else
@@ -100,17 +116,17 @@ public class PostRepo : IPostRepo
 
 
 
-            return Result<Dictionary<string, List<PostReadDto>>>.Success(groupedPosts);
+            return Result<Dictionary<string, List<PostGeneralInfoDto>>>.Success(groupedPosts);
 
         }
         catch (Exception ex)
         {
             _logger.LogError($"ERROR: {ex.Message}", ex);
-            return Result<Dictionary<string, List<PostReadDto>>>.Failure($"ERROR: {ex.Message}", OperationStatus.Error);
+            return Result<Dictionary<string, List<PostGeneralInfoDto>>>.Failure($"ERROR: {ex.Message}", OperationStatus.Error);
         }
     }
 
-    public async Task<Result<PagedList<PostReadDto>>> GetAll(
+    public async Task<Result<PagedList<PostGeneralInfoDto>>> GetAll(
      int page = 1,
      int pageSize = 10,
      string? searchTerm = null,
@@ -148,24 +164,24 @@ public class PostRepo : IPostRepo
             var posts = await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .ProjectTo<PostReadDto>(_mapper.ConfigurationProvider)
+                .ProjectTo<PostGeneralInfoDto>(_mapper.ConfigurationProvider)
                 .ToListAsync();
             var totalCount = await query.CountAsync();
             var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 
-            var result = new PagedList<PostReadDto>(
+            var result = new PagedList<PostGeneralInfoDto>(
                 data: posts,
                 totalCount: totalCount,
                 totalPages: totalPages,
                 currentPage: page,
                 pageSize: pageSize);
 
-            return Result<PagedList<PostReadDto>>.Success(result, OperationStatus.Success);
+            return Result<PagedList<PostGeneralInfoDto>>.Success(result, OperationStatus.Success);
         }
         catch (Exception ex)
         {
             _logger.LogError($"ERROR: {ex.Message}", ex);
-            return Result<PagedList<PostReadDto>>.Failure($"ERROR: {ex.Message}", OperationStatus.Error);
+            return Result<PagedList<PostGeneralInfoDto>>.Failure($"ERROR: {ex.Message}", OperationStatus.Error);
         }
     }
 
@@ -198,8 +214,14 @@ public class PostRepo : IPostRepo
     }
 
 
-    public async Task<Result<PostReadDto>> UpsertPost(Guid postId, PostUpsertDto postDto)
+    public async Task<Result<PostReadDetailsDto>> UpsertPost(string authorId, Guid postId, PostUpsertDto postDto)
     {
+
+        var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == authorId);
+
+        if (user is null)
+            return Result<PostReadDetailsDto>.Failure("Couldn't find user", OperationStatus.NotFound);
+
         var post2Update = await _context.Posts
             .Include(p => p.PostTags)
                 .ThenInclude(pt => pt.Tag)
@@ -209,12 +231,16 @@ public class PostRepo : IPostRepo
             .SingleOrDefaultAsync(p => p.Id == postId);
 
         if (post2Update is not Post)
+        {
+            postDto.AuthorId = user.Id;
             return await CreatePost(postDto);
+        }
 
+        post2Update.AuthorId = user.Id;
         return await UpdatePost(postDto, post2Update);
     }
 
-    private async Task<Result<PostReadDto>> UpdatePost(PostUpsertDto postDto, Post post2Update)
+    private async Task<Result<PostReadDetailsDto>> UpdatePost(PostUpsertDto postDto, Post post2Update)
     {
         try
         {
@@ -234,18 +260,19 @@ public class PostRepo : IPostRepo
 
             await GeneratePostCategories(postDto.Categories, post2Update);
 
+
             await _context.SaveChangesAsync();
 
-            return Result<PostReadDto>.Success(_mapper.Map<PostReadDto>(post2Update), OperationStatus.Updated);
+            return Result<PostReadDetailsDto>.Success(_mapper.Map<PostReadDetailsDto>(post2Update), OperationStatus.Updated);
         }
         catch (Exception ex)
         {
             _logger.LogError($"ERROR: {ex.Message}", ex);
-            return Result<PostReadDto>.Failure($"ERROR: {ex.Message}", OperationStatus.Error);
+            return Result<PostReadDetailsDto>.Failure($"ERROR: {ex.Message}", OperationStatus.Error);
         }
     }
 
-    public async Task<Result<PostReadDto>> CreatePost(PostUpsertDto postDto)
+    public async Task<Result<PostReadDetailsDto>> CreatePost(PostUpsertDto postDto)
     {
         try
         {
@@ -266,13 +293,13 @@ public class PostRepo : IPostRepo
             await _context.AddAsync(newPost);
             await _context.SaveChangesAsync();
 
-            return Result<PostReadDto>.Success(
-                _mapper.Map<PostReadDto>(newPost), OperationStatus.Created);
+            return Result<PostReadDetailsDto>.Success(
+                _mapper.Map<PostReadDetailsDto>(newPost), OperationStatus.Created);
         }
         catch (Exception ex)
         {
             _logger.LogError($"ERROR: {ex.Message}", ex);
-            return Result<PostReadDto>.Failure($"ERROR: {ex.Message}", OperationStatus.Error);
+            return Result<PostReadDetailsDto>.Failure($"ERROR: {ex.Message}", OperationStatus.Error);
         }
     }
 

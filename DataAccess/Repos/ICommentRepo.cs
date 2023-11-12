@@ -1,6 +1,7 @@
 ﻿// Ignore Spelling: Repo Repos
 
 using DataAccess.Dtos;
+using DataAccess.Shared;
 
 namespace DataAccess.Repos
 {

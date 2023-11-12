@@ -1,13 +1,13 @@
 ﻿using DataAccess.Dtos;
-using Domain.Shared;
+using DataAccess.Shared;
 
 namespace DataAccess.Repos
 {
     public interface IPostRepo
     {
-        Task<Result<PostReadDto>> CreatePost(PostUpsertDto postDto);
+        Task<Result<PostReadDetailsDto>> CreatePost(PostUpsertDto postDto);
         Task<Result<bool>> Delete(Guid postId);
-        Task<Result<PagedList<PostReadDto>>> GetAll(
+        Task<Result<PagedList<PostGeneralInfoDto>>> GetAll(
          int page = 1,
          int pageSize = 10,
          string? searchTerm = null,
@@ -15,9 +15,9 @@ namespace DataAccess.Repos
          bool isSortAscending = true,
          string? filterValue = null,
          string? filterType = null);
-        Task<Result<Dictionary<string, List<PostReadDto>>>> GetAllPostsGroupedByCategory();
+        Task<Result<Dictionary<string, List<PostGeneralInfoDto>>>> GetAllPostsGroupedByCategory();
         Task<Result<List<ArchivePostDto>>> GetArchivePosts();
-        Task<Result<PostReadDto>> GetBySlug(string slug);
-        Task<Result<PostReadDto>> UpsertPost(Guid postId, PostUpsertDto postDto);
+        Task<Result<PostReadDetailsDto>> GetBySlug(string slug);
+        Task<Result<PostReadDetailsDto>> UpsertPost(string authorId, Guid postId, PostUpsertDto postDto);
     }
 }

@@ -6,8 +6,7 @@ using AutoMapper.QueryableExtensions;
 using DataAccess.Contexts;
 using DataAccess.Dtos;
 using DataAccess.Entities;
-
-using Domain.Entities;
+using DataAccess.Shared;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -48,13 +47,16 @@ namespace DataAccess.Repos
                                           Id = comment.Id,
                                           Body = comment.Body,
                                           Active = comment.Active,
-                                          Email = user.Email!,
-                                          AuthorId = user.Id,
+                                          Author = new UserReadDto
+                                          {
+                                              Id = user.Id,
+                                              Email = user.Email!,
+                                              UserName = user.UserName!,
+                                              ProfilePicture = user.ProfilePicture,
+                                          },
                                           ParentId = comment.parentId,
                                           PostId = comment.PostId,
                                           Updated = comment.Updated,
-                                          ProfilePicture = user.ProfilePicture,
-                                          UserName = user.UserName!,
                                           Created = comment.Created
                                       }).ToListAsync<CommentReadDto>();
 
@@ -141,10 +143,13 @@ namespace DataAccess.Repos
                         new CommentReadDto
                         {
                             Id = newComment.Id,
-                            AuthorId = author.Id,
-                            Email = author.Email!,
-                            UserName = author.UserName!,
-                            ProfilePicture = author.ProfilePicture,
+                            Author = new UserReadDto
+                            {
+                                Id = author.Id,
+                                Email = author.Email!,
+                                UserName = author.UserName!,
+                                ProfilePicture = author.ProfilePicture,
+                            },
                             Active = true,
                             ParentId = newComment.ParentId,
                             PostId = newComment.PostId,

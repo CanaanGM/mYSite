@@ -6,9 +6,8 @@ using Application.Security;
 
 using DataAccess.Dtos;
 using DataAccess.Repos;
+using DataAccess.Shared;
 
-using Domain.Entities;
-using Domain.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,10 +19,12 @@ public class PostController : ControllerBase
 {
     private readonly IPostRepo _postRepo;
     private readonly IJwtGenerator _jwtGenerator;
+    private readonly IUserAccessor _userAccessor;
 
-    public PostController(IPostRepo postRepo, IJwtGenerator jwtGenerator)
+    public PostController(IPostRepo postRepo, IJwtGenerator jwtGenerator, IUserAccessor userAccessor)
     {
         _jwtGenerator = jwtGenerator;
+        _userAccessor = userAccessor;
         _postRepo = postRepo;
     }
 
@@ -91,10 +92,15 @@ public class PostController : ControllerBase
     }
 
     [Authorize(Roles = "Admin, User")]
-    [HttpPut("{id:Guid}")]
+    [HttpPost("{id:Guid}")]
     public async Task<IActionResult> UpSert(Guid id, [FromBody] PostUpsertRequest post)
     {
+        var authorId = _userAccessor.GetUserId();
+
+        if (authorId is null) return Unauthorized();
+
         var res = await _postRepo.UpsertPost(
+            authorId,
             id,
             new PostUpsertDto
             {
@@ -108,26 +114,7 @@ public class PostController : ControllerBase
         {
             OperationStatus.Created => CreatedAtAction(nameof(GetPost), new { slug = res.Value.Slug}, res.Value),
             OperationStatus.Updated => NoContent(),
-            OperationStatus.Error => Problem(statusCode: 500, detail: "Something went wrong processing your request, please try again later."),
-            _ => BadRequest()
-        };
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> Create([FromBody] PostUpsertRequest post)
-    {
-        var res = await _postRepo.CreatePost(
-            new PostUpsertDto
-            {
-                Title = post.Title,
-                Content = post.Body,
-                Tags = post.Tags,
-                Categories = post.Categories,
-                IsPublished = post.IsPublised
-            });
-        return res.Operation switch
-        {
-            OperationStatus.Created => CreatedAtAction(nameof(GetPost), new { slug = res.Value.Slug }, res.Value),
+            OperationStatus.NotFound => Unauthorized(),
             OperationStatus.Error => Problem(statusCode: 500, detail: "Something went wrong processing your request, please try again later."),
             _ => BadRequest()
         };
@@ -137,6 +124,10 @@ public class PostController : ControllerBase
     [HttpDelete("{id:Guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
+        var authorId = _userAccessor.GetUserId();
+
+        if (authorId is null) return Unauthorized();
+
         var res = await _postRepo.Delete(id);
         return res.Operation switch
         {

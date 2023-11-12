@@ -3,9 +3,10 @@ using AutoMapper.QueryableExtensions;
 
 using DataAccess.Contexts;
 using DataAccess.Dtos;
+using DataAccess.Entities;
+using DataAccess.Shared;
 using DataAccess.Utilities;
 
-using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
