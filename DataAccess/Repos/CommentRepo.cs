@@ -40,13 +40,16 @@ namespace DataAccess.Repos
             try
             {
                 var comments = await (from comment in _blogContext.Comments
-                                      join user in _blogContext.Users on comment.AuthorId equals user.Id
-                                      where comment.PostId == postId
+                                      join userReaction in _blogContext.CommentsUsersReactions on comment.Id equals userReaction.CommentId
+                                      join user in _blogContext.Users on userReaction.UserId equals user.Id
+                                      where comment.PostId == postId && comment.AuthorId == user.Id
                                       select new CommentReadDto
                                       {
                                           Id = comment.Id,
                                           Body = comment.Body,
                                           Active = comment.Active,
+                                          Likes = _blogContext.CommentsUsersReactions.Count(ur => ur.CommentId == comment.Id && ur.ReactionType == ReactionType.Like),
+                                          Dislikes = _blogContext.CommentsUsersReactions.Count(ur => ur.CommentId == comment.Id && ur.ReactionType == ReactionType.Dislike),
                                           Author = new UserReadDto
                                           {
                                               Id = user.Id,
