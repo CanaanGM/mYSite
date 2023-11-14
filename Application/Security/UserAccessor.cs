@@ -24,7 +24,10 @@ namespace Application.Security
 
         public string? GetUsername()
         {
-            return _httpContextAccessor?.HttpContext?.User?.FindFirstValue(ClaimTypes.Name);
+            var userSubClaim = _httpContextAccessor?.HttpContext?.User?.FindFirstValue(JwtRegisteredClaimNames.Sub);
+            if (userSubClaim != null)
+                return userSubClaim;
+            return null;
         }
 
         public string? GetUserId()

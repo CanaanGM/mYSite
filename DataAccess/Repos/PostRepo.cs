@@ -181,6 +181,30 @@ public class PostRepo : IPostRepo
 
 
 
+    public async Task<Result<IList<PostReadWithEntity>>> GetUsersFavoritePosts(string userId)
+    {
+        try
+        {
+            var posts = await _context.UsersFavoritePosts
+                .AsNoTracking()
+                .Include(x => x.Post)
+                .Where(x => x.UserId == userId)
+                .Select(x => x.Post)
+                .ProjectTo<PostReadWithEntity>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+
+            return Result<IList<PostReadWithEntity>>.Success(posts);
+
+
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"ERROR: {ex.Message}", ex);
+            return Result<IList<PostReadWithEntity>>.Failure($"ERROR: {ex.Message}", OperationStatus.Error);
+        }
+    }
+
+
     public async Task<Result<PostReadDetailsDto>> UpsertPost(string authorId, Guid? postId, PostUpsertDto postDto)
     {
 

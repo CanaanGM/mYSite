@@ -9,4 +9,6 @@ public class User : IdentityUser
     public List<Comment>? Comments { get; set; }
     public List<Post> AuthoredPosts { get; set; } = null!;
 
+    public List<UserFavoritePost> Favorites { get; set; }
+
 }

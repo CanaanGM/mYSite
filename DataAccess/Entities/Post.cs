@@ -22,6 +22,8 @@ public class Post
     public User Author { get; set; } = null!;
     public ICollection<PostTag> PostTags { get; set; } = null!;
     public ICollection<PostCategory> PostCategories { get; set; } = null!;
+    public ICollection<UserFavoritePost> Favorites { get; set; } 
+
     public ICollection<Comment>? Comments { get; set; }
 
 }

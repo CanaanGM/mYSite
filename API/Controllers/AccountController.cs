@@ -6,6 +6,7 @@ using API.Contracts;
 using Application.Security;
 
 using DataAccess.Entities;
+using DataAccess.Repos;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -19,13 +20,26 @@ public class AccountController : ControllerBase
 {
     private readonly UserManager<User> _userManager;
     private readonly IJwtGenerator _jwtGenerator;
+    private readonly IUserAccessor _userAccessor;
+    private readonly ICommentRepo _commentRepo;
+    private readonly IPostRepo _postRepo;
 
-    public AccountController(UserManager<User> userManager, IJwtGenerator jwtGenerator)
+    public AccountController(
+        UserManager<User> userManager, 
+        IJwtGenerator jwtGenerator, 
+        IUserAccessor userAccessor, 
+        ICommentRepo commentRepo,
+        IPostRepo postRepo
+        
+        )
     {
         _jwtGenerator = jwtGenerator;
+        _userAccessor = userAccessor;
+        _commentRepo = commentRepo;
+        _postRepo = postRepo;
         _userManager = userManager;
     }
-
+    [AllowAnonymous]
     [HttpPost("register")]
     public async Task<ActionResult> Register(UserRegisterRequest userCreds)
     {
@@ -55,7 +69,7 @@ public class AccountController : ControllerBase
         return CreatedAtAction(nameof(Register), new RegisterResponse(confirmationLink));
     }
 
-
+    [AllowAnonymous]
     [HttpPost("login")]
     public async Task<IActionResult> Login(UserLoginRequest userCreds)
     {
@@ -143,28 +157,21 @@ public class AccountController : ControllerBase
     public async Task<IActionResult> ConfirmEmail(string userId, string token)
     {
         if (String.IsNullOrEmpty(userId) || String.IsNullOrEmpty(token))
-        {
             return BadRequest(new { message = "Invalid request. User ID and token are required." });
-        }
 
         var user = await _userManager.FindByIdAsync(userId);
 
         if (user == null)
-        {
             return NotFound(new { message = "User not found." });
-        }
 
         token = Uri.UnescapeDataString(token);
         var result = await _userManager.ConfirmEmailAsync(user, token);
 
         if (result.Succeeded)
-        {
             return Ok(new EmailConfirmationResponse("Email confirmed successfully." ));
-        }
         else
-        {
             return BadRequest(new EmailConfirmationResponse("Email confirmation failed." ));
-        }
+        
     }
 
     [Authorize]
@@ -217,6 +224,40 @@ public class AccountController : ControllerBase
         return confirmationLink;
     }
 
+    [Authorize]
+    [HttpGet("profile")]
+    public async Task<IActionResult> GetUserProfile()
+    {
+        var userName = _userAccessor.GetUsername();
+
+        if (userName == null) return Unauthorized();
+
+        var user = await _userManager.FindByNameAsync(userName);
+        if (user == null) return Unauthorized();
+
+        var userRoles = await _userManager.GetRolesAsync(user);
+
+        //todo: Get user's comment 
+        var userComments = await _commentRepo.GetAllCommentsForUser(user.Id);
+        var userFavorites = await _postRepo.GetUsersFavoritePosts(user.Id);
+
+        if (!userComments.IsSuccess || !userFavorites.IsSuccess)
+            return Problem(statusCode: 500, detail: "Something went wrong processing your request, please try again later.");
+
+        return Ok(
+            new UserProfileResponse(
+                username : user.UserName!,
+                email: user.Email!,
+                profilePicture: user.ProfilePicture,
+                Roles: userRoles.ToArray(),
+                comments: userComments.Value.ToList(),
+                favoritePosts: userFavorites.Value.ToList()
+
+                )
+            );
+
+
+    }
 
 
 }

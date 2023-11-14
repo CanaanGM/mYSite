@@ -15,7 +15,7 @@ namespace DataAccess.Dtos
         public string Name { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
         public DateTime LastModifiedAt { get; set; }
-        public ICollection<PostReadWithTag> Posts { get; set; }
+        public ICollection<PostReadWithEntity> Posts { get; set; }
 
     }
 }

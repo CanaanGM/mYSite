@@ -7,6 +7,7 @@ namespace DataAccess.Repos
 {
     public interface ICommentRepo
     {
+        Task<Result<IList<CommentReadForAuthorDto>>> GetAllCommentsForUser(string userId);
         Task<Result<IEnumerable<CommentReadDto>>> GetCommentsForPost(Guid postId);
         Task<Result<bool>> SoftDeleteComment(Guid commentId, string authorId);
         Task<Result<CommentReadDto>> UpsertComment(CommentCreateDto upsertComment, string authorId);

@@ -20,5 +20,6 @@ namespace DataAccess.Repos
         Task<Result<PostReadDetailsDto>> GetBySlug(string slug);
         Task<Result<PostReadDetailsDto>> UpsertPost(string authorId, Guid? postId, PostUpsertDto postDto);
         Task<Result<bool>> SoftDelete(Guid postId);
+        Task<Result<IList<PostReadWithEntity>>> GetUsersFavoritePosts(string userId);
     }
 }

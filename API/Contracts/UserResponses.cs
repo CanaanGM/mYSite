@@ -1,3 +1,5 @@
+using DataAccess.Dtos;
+
 namespace API.Contracts;
 
 public record UserNameCheckResponse(string message, bool isAvailable);
@@ -16,3 +18,12 @@ public record LoginResponse(
 
 public record EmailConfirmationResponse(string message);
 public record RegisterResponse(string message);
+
+public record UserProfileResponse(
+    string username, 
+    string email, 
+    string[] Roles, 
+    string? profilePicture,
+    List<CommentReadForAuthorDto> comments, 
+    List<PostReadWithEntity> favoritePosts 
+    );

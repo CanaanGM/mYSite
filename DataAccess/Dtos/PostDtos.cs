@@ -59,7 +59,7 @@ public class ArchivePostDto
 }
 
 
-public class PostReadWithTag
+public class PostReadWithEntity
 {
     public string Title { get; set; }
     public string Slug { get; set; }

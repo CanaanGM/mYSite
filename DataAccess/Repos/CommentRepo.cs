@@ -69,6 +69,28 @@ namespace DataAccess.Repos
             }
         }
 
+        public async Task<Result<IList<CommentReadForAuthorDto>>> GetAllCommentsForUser(string userId)
+        {
+            try
+            {
+                var comments = await _blogContext.Comments
+                    .AsNoTracking()
+                    .Include(x => x.Post)
+                    // do i need the replies ? ? ? 
+                    .Where(x => x.AuthorId == userId)
+                    .OrderBy(x => x.Created)
+                    .ProjectTo<CommentReadForAuthorDto>(_mapper.ConfigurationProvider)
+                    .ToListAsync();
+
+                return Result<IList<CommentReadForAuthorDto>>.Success(comments);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return Result<IList<CommentReadForAuthorDto>>.Failure(ex.Message, OperationStatus.Error);
+            }
+        }
+
         public async Task<Result<CommentReadDto>> UpsertComment(CommentCreateDto upsertComment, string authorId)
         {
             try
