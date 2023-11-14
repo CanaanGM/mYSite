@@ -25,5 +25,6 @@ public class Post
     public ICollection<UserFavoritePost> Favorites { get; set; } 
 
     public ICollection<Comment>? Comments { get; set; }
+    public ICollection<PostUserReaction> UserReactions { get; set; }
 
 }

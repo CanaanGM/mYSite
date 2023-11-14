@@ -140,6 +140,64 @@ namespace DataAccess.Repos
         }
 
 
+        public async Task<Result<bool>> UpsertCommentReaction(string userId, Guid commentId, ReactionType reactionType)
+        {
+            try
+            {
+                var existingReaction = await _blogContext.CommentsUsersReactions
+                    .FirstOrDefaultAsync(x => x.UserId == userId && x.CommentId == commentId);
+
+                Result<bool> res;
+
+                if (existingReaction is not null)
+                    res =  UpdateReaction(existingReaction, reactionType);
+
+
+                else if (existingReaction?.ReactionType == reactionType)
+                    res = RemoveReaction(existingReaction);
+
+                else
+                    res = CreateReaction(userId, commentId, reactionType);
+
+                var result = await _blogContext.SaveChangesAsync() > 0;
+
+                return result
+                    ? res
+                    : Result<bool>.Failure("Failed to create Reaction", OperationStatus.Error);
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                return Result<bool>.Failure(ex.Message, OperationStatus.Error);
+            }
+        }
+
+        private Result<bool> CreateReaction(string userId, Guid commentId, ReactionType reactionType)
+        {
+            var newReaction = new CommentUserReaction
+            {
+                UserId = userId,
+                CommentId = commentId,
+                ReactionType = reactionType
+            };
+            _blogContext.CommentsUsersReactions.Add(newReaction);
+            return Result<bool>.Success(true, OperationStatus.Created);
+        }
+
+        private Result<bool> RemoveReaction(CommentUserReaction existingReaction)
+        {
+            _blogContext.CommentsUsersReactions.Remove(existingReaction);
+            return Result<bool>.Success(true, OperationStatus.Deleted);
+        }
+
+        private Result<bool> UpdateReaction(CommentUserReaction existingReaction, ReactionType reactionType)
+        {
+            existingReaction.ReactionType = reactionType;
+            _blogContext.CommentsUsersReactions.Add(existingReaction);
+            return Result<bool>.Success(true, OperationStatus.Updated);
+        }
+
         private async Task<Result<CommentReadDto>> CreateComment(CommentCreateDto newComment, User author)
         {
             try

@@ -17,6 +17,10 @@ public class BlogContext : IdentityDbContext<User>
     public DbSet<Comment> Comments { get; set; }
     public DbSet<UserFavoritePost> UsersFavoritePosts { get; set; }
 
+    public DbSet<PostUserReaction> PostsUsersReaction { get; set; }
+    public DbSet<CommentUserReaction> CommentsUsersReactions { get; set; }
+
+
     public BlogContext()
     {
         // for cli ?
@@ -48,8 +52,8 @@ public class BlogContext : IdentityDbContext<User>
         modelBuilder.ApplyConfiguration(new UserFavoritePostConfiguration());
 
 
-
-
+        modelBuilder.ApplyConfiguration(new PostReactionConfiguration());
+        modelBuilder.ApplyConfiguration(new CommentReactionConfiguration());
 
         //modelBuilder.Entity<Post>()
         //    .HasQueryFilter(p => p.IsPublished);

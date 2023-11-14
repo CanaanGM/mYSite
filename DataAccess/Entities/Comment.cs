@@ -21,5 +21,7 @@ namespace DataAccess.Entities
         public User Author { get; set; } = null!;
         public DateTimeOffset Created { get; set; }
         public DateTimeOffset Updated { get; set; }
+
+        public ICollection<CommentUserReaction> UserReactions { get; set; }
     }
 }

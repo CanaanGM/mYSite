@@ -204,6 +204,55 @@ public class PostRepo : IPostRepo
         }
     }
 
+    public async Task<Result<bool>> UpSertPostReaction(string userId, Guid postId, ReactionType reactionType)
+    {
+        try
+        {
+            var existingReaction = await _context.PostsUsersReaction
+                .FirstOrDefaultAsync(x => x.UserId == userId && x.PostId == postId);
+
+            Result<bool> res;
+
+            if (existingReaction is not null)
+            {
+                existingReaction.ReactionType = reactionType;
+                _context.PostsUsersReaction.Add(existingReaction);
+
+                res = Result<bool>.Success(true, OperationStatus.Updated);
+            }
+
+
+            else if (existingReaction?.ReactionType == reactionType)
+            {
+                _context.PostsUsersReaction.Remove(existingReaction);
+                res = Result<bool>.Success(true, OperationStatus.Deleted);
+            }
+            else
+            {
+                var newReaction = new PostUserReaction
+                {
+                    UserId = userId,
+                    PostId = postId,
+                    ReactionType = reactionType
+                };
+                _context.PostsUsersReaction.Add(newReaction);
+                res = Result<bool>.Success(true, OperationStatus.Created);
+            }
+
+            var result = await _context.SaveChangesAsync() > 0;
+
+            return result
+                ? res
+                : Result<bool>.Failure("Failed to create Reaction", OperationStatus.Error);
+
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message, ex);
+            return Result<bool>.Failure(ex.Message, OperationStatus.Error);
+        }
+    }
+
 
     public async Task<Result<PostReadDetailsDto>> UpsertPost(string authorId, Guid? postId, PostUpsertDto postDto)
     {

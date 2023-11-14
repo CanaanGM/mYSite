@@ -1,11 +1,14 @@
 ﻿// Ignore Spelling: repo Accessor API
 
+using API.Contracts;
+
 using Application.Security;
 
 using DataAccess.Dtos;
 using DataAccess.Repos;
 using DataAccess.Shared;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -54,6 +57,25 @@ namespace API.Controllers
                 OperationStatus.Error => Problem(statusCode: 500, detail: "Something went wrong processing your request, please try again later."),
                 _ => BadRequest()
             };
+        }
+
+        [Authorize]
+        [HttpPost("react")]
+        public async Task<IActionResult> ReactToComment(CommentReactionRequest reactionReq)
+        {
+            var userId = _userAccessor.GetUserId();
+            if(userId is null) return Unauthorized();
+
+            var res = await _repo.UpsertCommentReaction(userId, reactionReq.commentId, reactionReq.reactionType);
+
+            return res.Operation switch
+            {
+                OperationStatus.Created => Ok(),
+                OperationStatus.Updated => NoContent(),
+                OperationStatus.Error => Problem(statusCode: 500, detail: "Something went wrong processing your request, please try again later."),
+                _ => BadRequest()
+            };
+
         }
 
 

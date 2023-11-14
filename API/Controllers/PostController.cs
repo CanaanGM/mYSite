@@ -5,6 +5,7 @@ using API.Contracts;
 using Application.Security;
 
 using DataAccess.Dtos;
+using DataAccess.Entities;
 using DataAccess.Repos;
 using DataAccess.Shared;
 
@@ -119,6 +120,26 @@ public class PostController : ControllerBase
             _ => BadRequest()
         };
     }
+
+
+    [Authorize]
+    [HttpPost("react")]
+    public async Task<IActionResult> ReactToPost([FromBody] PostReactionRequest postReaction)
+    {
+        var userId = _userAccessor.GetUserId();
+        if(userId is null) return Unauthorized();
+
+        var res = await _postRepo.UpSertPostReaction(userId, Guid.Parse(postReaction.PostId), postReaction.ReactionType);
+
+        return res.Operation switch
+        {
+            OperationStatus.Created => Ok(),
+            OperationStatus.Updated => NoContent(),
+            OperationStatus.Error => Problem(statusCode: 500, detail: "Something went wrong processing your request, please try again later."),
+            _ => BadRequest()
+        };
+    }
+
 
     [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]

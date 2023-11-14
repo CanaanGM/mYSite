@@ -10,5 +10,8 @@ public class User : IdentityUser
     public List<Post> AuthoredPosts { get; set; } = null!;
 
     public List<UserFavoritePost> Favorites { get; set; }
+    public ICollection<PostUserReaction> PostReactions { get; set; }
+    public ICollection<CommentUserReaction> CommentReactions { get; set; }
+
 
 }

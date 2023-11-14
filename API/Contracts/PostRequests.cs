@@ -1,4 +1,5 @@
 using DataAccess.Dtos;
+using DataAccess.Entities;
 
 namespace API.Contracts;
 
@@ -9,4 +10,9 @@ public record PostUpsertRequest(
     List<TagUpsertDto> Tags,
     List<CategoryUpsertDto> Categories,
     bool IsPublised = false
+);
+
+public record PostReactionRequest(
+        string PostId,
+        ReactionType ReactionType
 );

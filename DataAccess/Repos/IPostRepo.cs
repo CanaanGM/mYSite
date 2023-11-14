@@ -1,4 +1,5 @@
 ﻿using DataAccess.Dtos;
+using DataAccess.Entities;
 using DataAccess.Shared;
 
 namespace DataAccess.Repos
@@ -21,5 +22,6 @@ namespace DataAccess.Repos
         Task<Result<PostReadDetailsDto>> UpsertPost(string authorId, Guid? postId, PostUpsertDto postDto);
         Task<Result<bool>> SoftDelete(Guid postId);
         Task<Result<IList<PostReadWithEntity>>> GetUsersFavoritePosts(string userId);
+        Task<Result<bool>> UpSertPostReaction(string userId, Guid postId, ReactionType reactionType);
     }
 }
