@@ -135,6 +135,7 @@ public class PostController : ControllerBase
         {
             OperationStatus.Created => Ok(),
             OperationStatus.Updated => NoContent(),
+            OperationStatus.Deleted => NoContent(),
             OperationStatus.Error => Problem(statusCode: 500, detail: "Something went wrong processing your request, please try again later."),
             _ => BadRequest()
         };

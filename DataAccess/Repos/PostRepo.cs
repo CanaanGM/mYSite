@@ -46,11 +46,25 @@ public class PostRepo : IPostRepo
                     .ThenInclude(x => x.Tag)
                 .Include(x => x.PostCategories)
                     .ThenInclude(x => x.Category)
+                .ProjectTo<PostReadDetailsDto>(_mapper.ConfigurationProvider)
                 .SingleOrDefaultAsync(x => x.Slug == slug);
+
+
 
             if(post is null ) return Result<PostReadDetailsDto>.Success(new PostReadDetailsDto());
 
-            return Result<PostReadDetailsDto>.Success( _mapper.Map<PostReadDetailsDto>( post));
+            var post2 = await _context.Posts
+                .Include(x => x.UserReactions)
+                .Where(x => x.Slug == slug)
+                .SingleOrDefaultAsync();
+
+            if (post != null)
+            {
+                post.Likes = post2.UserReactions.Count(ur => ur.ReactionType == ReactionType.Like);
+                post.Dislikes = post2.UserReactions.Count(ur => ur.ReactionType == ReactionType.Dislike);
+            }
+
+            return Result<PostReadDetailsDto>.Success(post);
         }
         catch (Exception ex)
         {
@@ -97,18 +111,14 @@ public class PostRepo : IPostRepo
             {
                 foreach (var catName in post.Categories)
                 {
-
                     if (!groupedPosts.ContainsKey(catName) )
                     {
                         groupedPosts[catName] = new List<PostGeneralInfoDto>() { post};
-
                     }
                     else
                         groupedPosts[catName].Add(post);
                 }
             }
-
-
 
             return Result<Dictionary<string, List<PostGeneralInfoDto>>>.Success(groupedPosts);
 
@@ -137,11 +147,9 @@ public class PostRepo : IPostRepo
             if (pageSize > 10 || pageSize < 1)
                 pageSize = 10;
 
-            // Apply filtering based on filter type
             if (!string.IsNullOrEmpty(filterType) && !string.IsNullOrEmpty(filterValue))
                 ApplyFilter(ref query, filterValue, filterType);
 
-            // Apply additional filtering based on search term
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 query = query.Where(p =>
@@ -151,15 +159,29 @@ public class PostRepo : IPostRepo
                     );
             }
 
-            // Apply dynamic sorting
             ApplySorting(ref query, sortBy, isSortAscending);
 
-            // Paging
             var posts = await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .ProjectTo<PostGeneralInfoDto>(_mapper.ConfigurationProvider)
+                .Select(post => new PostGeneralInfoDto
+                {
+                    Id = post.Id,
+                    Title = post.Title,
+                    Slug = post.Slug,
+                    Content = post.Content,
+                    IsSoftDeleted = post.IsSoftDeleted,
+                    Likes = post.UserReactions.Count(ur => ur.ReactionType == ReactionType.Like),
+                    Dislikes = post.UserReactions.Count(ur => ur.ReactionType == ReactionType.Dislike),
+                    Tags = post.PostTags.Select(pt => pt.Tag.Name).ToList(),
+                    Categories = post.PostCategories.Select(pc => pc.Category.Name).ToList(),
+                    IsPublished = post.IsPublished,
+                    PublishDate = post.PublishDate,
+                    CreatedAt = post.CreatedAt,
+                    LastModifiedAt = post.LastModifiedAt
+                })
                 .ToListAsync();
+
             var totalCount = await query.CountAsync();
             var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 
@@ -213,7 +235,7 @@ public class PostRepo : IPostRepo
 
             Result<bool> res;
 
-            if (existingReaction is not null)
+            if (existingReaction is not null && existingReaction?.ReactionType != reactionType)
             {
                 existingReaction.ReactionType = reactionType;
                 _context.PostsUsersReaction.Add(existingReaction);

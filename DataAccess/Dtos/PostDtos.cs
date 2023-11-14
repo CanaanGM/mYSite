@@ -12,6 +12,8 @@ public class PostReadDetailsDto
     public ICollection<TagReadDto> Tags { get; set; }
     public ICollection<CategoryReadDto> Categories { get; set; }
     public ICollection<CommentReadDto> Comments { get; set; }
+    public int Likes { get; set; }
+    public int Dislikes { get; set; }
     public UserReadDto Author { get; set; } = null!;
     public bool IsPublished { get; set; } = false;
     public DateTime PublishDate { get; set; }
@@ -26,6 +28,8 @@ public class PostGeneralInfoDto
     public string Slug { get; set; } = null!;
     public string Content { get; set; } = null!;
     public bool IsSoftDeleted { get; set; }
+    public int Likes { get; set; }
+    public int Dislikes { get; set; }
     public ICollection<string> Tags { get; set; }
     public ICollection<string> Categories { get; set; }
     public bool IsPublished { get; set; } = false;

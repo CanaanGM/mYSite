@@ -149,7 +149,7 @@ namespace DataAccess.Repos
 
                 Result<bool> res;
 
-                if (existingReaction is not null)
+                if (existingReaction is not null && existingReaction?.ReactionType != reactionType)
                     res =  UpdateReaction(existingReaction, reactionType);
 
 
