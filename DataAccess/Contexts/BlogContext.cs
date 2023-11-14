@@ -15,6 +15,7 @@ public class BlogContext : IdentityDbContext<User>
     public DbSet<Category> Categories { get; set; }
     public DbSet<PostTag> PostTags { get; set; }
     public DbSet<Comment> Comments { get; set; }
+    public DbSet<UserFavoritePost> UsersFavoritePosts { get; set; }
 
     public BlogContext()
     {
@@ -38,13 +39,13 @@ public class BlogContext : IdentityDbContext<User>
             .HasMany(u => u.Comments);
 
 
-        modelBuilder.ApplyConfiguration(new ConfigureCategoryEntity());
-        modelBuilder.ApplyConfiguration(new ConfigureCommentEntity());
-        modelBuilder.ApplyConfiguration(new ConfigurePostCategoryEntity());
-        modelBuilder.ApplyConfiguration(new ConfigurePostEntity());
-        modelBuilder.ApplyConfiguration(new ConfigurePostTagEntity());
-        modelBuilder.ApplyConfiguration(new ConfigureTagEntity());
-
+        modelBuilder.ApplyConfiguration(new CategoryConfiguration());
+        modelBuilder.ApplyConfiguration(new CommentConfiguration());
+        modelBuilder.ApplyConfiguration(new PostCategoryConfiguration());
+        modelBuilder.ApplyConfiguration(new PostConfiguration());
+        modelBuilder.ApplyConfiguration(new PostTagConfiguration());
+        modelBuilder.ApplyConfiguration(new TagConfiguration());
+        modelBuilder.ApplyConfiguration(new UserFavoritePostConfiguration());
 
 
 

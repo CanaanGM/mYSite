@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace DataAccess.Contexts
 {
-    public class ConfigurePostEntity : IEntityTypeConfiguration<Post>
+    public class PostConfiguration : IEntityTypeConfiguration<Post>
     {
         public  void Configure(EntityTypeBuilder<Post> modelBuilder)
         {

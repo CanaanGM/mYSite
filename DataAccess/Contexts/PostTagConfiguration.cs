@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace DataAccess.Contexts
 {
-    public class ConfigurePostTagEntity : IEntityTypeConfiguration<PostTag>
+    public class PostTagConfiguration : IEntityTypeConfiguration<PostTag>
     {
         public void Configure(EntityTypeBuilder<PostTag> modelBuilder)
         {

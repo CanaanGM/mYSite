@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace DataAccess.Contexts
 {
-    public class ConfigureTagEntity : IEntityTypeConfiguration<Tag>
+    public class TagConfiguration : IEntityTypeConfiguration<Tag>
     {
         public void Configure(EntityTypeBuilder<Tag> modelBuilder)
         {

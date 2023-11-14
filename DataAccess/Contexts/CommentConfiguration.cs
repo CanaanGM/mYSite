@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace DataAccess.Contexts
 {
-    public class ConfigureCommentEntity : IEntityTypeConfiguration<Comment>
+    public class CommentConfiguration : IEntityTypeConfiguration<Comment>
     {
         public void Configure(EntityTypeBuilder<Comment> modelBuilder)
         {

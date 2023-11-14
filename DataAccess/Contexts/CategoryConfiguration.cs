@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace DataAccess.Contexts
 {
-    public class ConfigureCategoryEntity : IEntityTypeConfiguration<Category>
+    public class CategoryConfiguration : IEntityTypeConfiguration<Category>
     {
         public void Configure(EntityTypeBuilder<Category> modelBuilder)
         {

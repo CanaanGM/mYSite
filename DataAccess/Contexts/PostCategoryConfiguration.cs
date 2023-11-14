@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace DataAccess.Contexts
 {
-    public class ConfigurePostCategoryEntity : IEntityTypeConfiguration<PostCategory>
+    public class PostCategoryConfiguration : IEntityTypeConfiguration<PostCategory>
     {
         public void Configure(EntityTypeBuilder<PostCategory> modelBuilder)
         {
