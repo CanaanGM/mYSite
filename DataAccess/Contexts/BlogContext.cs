@@ -34,89 +34,31 @@ public class BlogContext : IdentityDbContext<User>
                 new IdentityRole { Name = "User", NormalizedName = "USER" },
                 new IdentityRole { Name = "Admin", NormalizedName = "ADMIN" }
                 );
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.Comments);
 
-        modelBuilder.Entity<PostTag>()
-            .HasKey(pt => new { pt.PostId, pt.TagId });
 
-        modelBuilder.Entity<PostTag>()
-            .HasOne(pt => pt.Post)
-            .WithMany(p => p.PostTags)
-            .HasForeignKey(pt => pt.PostId)
-            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.ApplyConfiguration(new ConfigureCategoryEntity());
+        modelBuilder.ApplyConfiguration(new ConfigureCommentEntity());
+        modelBuilder.ApplyConfiguration(new ConfigurePostCategoryEntity());
+        modelBuilder.ApplyConfiguration(new ConfigurePostEntity());
+        modelBuilder.ApplyConfiguration(new ConfigurePostTagEntity());
+        modelBuilder.ApplyConfiguration(new ConfigureTagEntity());
 
-        modelBuilder.Entity<PostTag>()
-            .HasOne(pt => pt.Tag)
-            .WithMany(t => t.PostTags)
-            .HasForeignKey(pt => pt.TagId)
-            .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<PostCategory>()
-            .HasKey(pt => new { pt.PostId, pt.CategoryId });
 
-        modelBuilder.Entity<PostCategory>()
-            .HasOne(pt => pt.Post)
-            .WithMany(p => p.PostCategories)
-            .HasForeignKey(pt => pt.PostId)
-            .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<PostCategory>()
-            .HasOne(pt => pt.Category)
-            .WithMany(t => t.CategoryPosts)
-            .HasForeignKey(pt => pt.CategoryId)
-            .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<Post>()
-            .HasMany(p => p.Comments)
-            .WithOne(c => c.Post)
-            .HasForeignKey(c => c.PostId);
-
-        modelBuilder.Entity<Post>()
-            .HasIndex(p => p.Slug)
-            .IsUnique();
-
-        modelBuilder.Entity<Post>()
-            .Property(c => c.CreatedAt)
-            .HasDefaultValueSql("NOW()");
 
         //modelBuilder.Entity<Post>()
         //    .HasQueryFilter(p => p.IsPublished);
 
-        modelBuilder.Entity<Tag>()
-            .Property(c => c.CreatedAt)
-            .HasDefaultValueSql("NOW()");
-
-        modelBuilder.Entity<Tag>()
-            .HasIndex(t => t.Name)
-            .IsUnique();
-
-        modelBuilder.Entity<Category>()
-            .Property(c => c.CreatedAt)
-            .HasDefaultValueSql("NOW()");
-
-        modelBuilder.Entity<Category>()
-            .HasIndex(t => t.Name)
-            .IsUnique();
 
 
-        modelBuilder.Entity<Comment>()
-            .HasOne(x => x.Parent)
-            .WithMany(x => x.Replies)
-            .HasForeignKey(x => x.parentId);
 
-        modelBuilder.Entity<Comment>()
-            .HasIndex(x => x.Id)
-            .IsUnique();
 
-        modelBuilder.Entity<Comment>()
-            .HasIndex(x => x.AuthorId);
 
-        modelBuilder.Entity<Comment>()
-            .HasIndex(x => x.parentId);
 
-        modelBuilder.Entity<Comment>()
-            .HasIndex(x => x.PostId);
 
-        modelBuilder.Entity<User>()
-            .HasMany(u => u.Comments);
     }
 }
