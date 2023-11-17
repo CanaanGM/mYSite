@@ -20,7 +20,6 @@ public class Profiles : Profile
         CreateMap<Post, PostReadWithEntity>();
         CreateMap<Post, PostUpsertDto>().ReverseMap();
 
-
         CreateMap<Tag, TagReadDto>()
             .ForMember(x => x.Posts, opt => opt.MapFrom(x => x.PostTags.Select(c => c.Post)))
             ;
@@ -33,9 +32,5 @@ public class Profiles : Profile
         CreateMap<Comment, CommentReadForAuthorDto>()
             .ForMember(x => x.PostTitle, opt => opt.MapFrom(e => e.Post.Title))
             .ForMember(x => x.PostSlug, opt => opt.MapFrom(e => e.Post.Slug));
-
-
-
-
     }
 }

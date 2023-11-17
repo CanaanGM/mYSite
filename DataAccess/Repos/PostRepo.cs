@@ -12,11 +12,11 @@ using DataAccess.Entities;
 using DataAccess.Shared;
 using DataAccess.Utilities;
 
-
-
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace DataAccess.Repos;
 
@@ -49,9 +49,7 @@ public class PostRepo : IPostRepo
                 .ProjectTo<PostReadDetailsDto>(_mapper.ConfigurationProvider)
                 .SingleOrDefaultAsync(x => x.Slug == slug);
 
-
-
-            if(post is null ) return Result<PostReadDetailsDto>.Success(new PostReadDetailsDto());
+            if (post is null) return Result<PostReadDetailsDto>.Success(new PostReadDetailsDto());
 
             var post2 = await _context.Posts
                 .Include(x => x.UserReactions)
@@ -73,18 +71,16 @@ public class PostRepo : IPostRepo
         }
     }
 
-
     public async Task<Result<List<ArchivePostDto>>> GetArchivePosts()
     {
-        var res = await  _context.Posts.ToListAsync();
+        var res = await _context.Posts.ToListAsync();
 
         try
         {
             if (res == null)
                 return Result<List<ArchivePostDto>>.Failure("No Posts found", OperationStatus.NotFound);
 
-            return Result <List<ArchivePostDto>>.Success( _mapper.Map<List<ArchivePostDto>>(res));
-
+            return Result<List<ArchivePostDto>>.Success(_mapper.Map<List<ArchivePostDto>>(res));
         }
         catch (Exception ex)
         {
@@ -97,23 +93,22 @@ public class PostRepo : IPostRepo
     {
         try
         {
-
             var res = await _context.Posts
-            .Include(p=>p.PostCategories)
+            .Include(p => p.PostCategories)
             .ProjectTo<PostGeneralInfoDto>(_mapper.ConfigurationProvider)
             .ToListAsync();
 
             if (res == null)
-                    return Result<Dictionary<string, List<PostGeneralInfoDto>>>.Failure("No Posts found", OperationStatus.NotFound);
+                return Result<Dictionary<string, List<PostGeneralInfoDto>>>.Failure("No Posts found", OperationStatus.NotFound);
 
-                var groupedPosts = new Dictionary<string, List<PostGeneralInfoDto>>();
+            var groupedPosts = new Dictionary<string, List<PostGeneralInfoDto>>();
             foreach (var post in res)
             {
                 foreach (var catName in post.Categories)
                 {
-                    if (!groupedPosts.ContainsKey(catName) )
+                    if (!groupedPosts.ContainsKey(catName))
                     {
-                        groupedPosts[catName] = new List<PostGeneralInfoDto>() { post};
+                        groupedPosts[catName] = new List<PostGeneralInfoDto>() { post };
                     }
                     else
                         groupedPosts[catName].Add(post);
@@ -121,7 +116,6 @@ public class PostRepo : IPostRepo
             }
 
             return Result<Dictionary<string, List<PostGeneralInfoDto>>>.Success(groupedPosts);
-
         }
         catch (Exception ex)
         {
@@ -154,8 +148,8 @@ public class PostRepo : IPostRepo
             {
                 query = query.Where(p =>
                     p.Title.Contains(searchTerm)
-                    ||p.Content.Contains(searchTerm)
-                    
+                    || p.Content.Contains(searchTerm)
+
                     );
             }
 
@@ -201,28 +195,45 @@ public class PostRepo : IPostRepo
         }
     }
 
-
-
-    public async Task<Result<IList<PostReadWithEntity>>> GetUsersFavoritePosts(string userId)
+    public async Task<Result<PagedList<PostReadWithEntity>>> GetUsersFavoritePosts(
+        string userId,
+        int page = 1,
+        int pageSize = 10)
     {
         try
         {
-            var posts = await _context.UsersFavoritePosts
+            if (pageSize > 10 || pageSize < 1)
+                pageSize = 10;
+
+            var query = _context.UsersFavoritePosts
                 .AsNoTracking()
                 .Include(x => x.Post)
-                .Where(x => x.UserId == userId)
+                .Where(x => x.UserId == userId);
+
+            var posts = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .Select(x => x.Post)
+                .OrderBy(s => s.CreatedAt)
                 .ProjectTo<PostReadWithEntity>(_mapper.ConfigurationProvider)
                 .ToListAsync();
 
-            return Result<IList<PostReadWithEntity>>.Success(posts);
+            var totalCount = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 
+            PagedList<PostReadWithEntity>? result = new PagedList<PostReadWithEntity>(
+                data: posts,
+                totalCount: totalCount,
+                totalPages: totalPages,
+                currentPage: page,
+                pageSize: pageSize);
 
+            return Result<PagedList<PostReadWithEntity>>.Success(result);
         }
         catch (Exception ex)
         {
             _logger.LogError($"ERROR: {ex.Message}", ex);
-            return Result<IList<PostReadWithEntity>>.Failure($"ERROR: {ex.Message}", OperationStatus.Error);
+            return Result<PagedList<PostReadWithEntity>>.Failure($"ERROR: {ex.Message}", OperationStatus.Error);
         }
     }
 
@@ -242,8 +253,6 @@ public class PostRepo : IPostRepo
 
                 res = Result<bool>.Success(true, OperationStatus.Updated);
             }
-
-
             else if (existingReaction?.ReactionType == reactionType)
             {
                 _context.PostsUsersReaction.Remove(existingReaction);
@@ -266,7 +275,6 @@ public class PostRepo : IPostRepo
             return result
                 ? res
                 : Result<bool>.Failure("Failed to create Reaction", OperationStatus.Error);
-
         }
         catch (Exception ex)
         {
@@ -275,10 +283,8 @@ public class PostRepo : IPostRepo
         }
     }
 
-
     public async Task<Result<PostReadDetailsDto>> UpsertPost(string authorId, Guid? postId, PostUpsertDto postDto)
     {
-
         var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == authorId);
 
         if (user is null)
@@ -321,7 +327,6 @@ public class PostRepo : IPostRepo
             await GeneratePostTags(postDto.Tags, post2Update);
 
             await GeneratePostCategories(postDto.Categories, post2Update);
-
 
             await _context.SaveChangesAsync();
 
@@ -373,10 +378,9 @@ public class PostRepo : IPostRepo
 
             post.IsSoftDeleted = true;
 
-            var res = await _context.SaveChangesAsync() > 0 ;
+            var res = await _context.SaveChangesAsync() > 0;
 
-            
-            return res 
+            return res
                 ? Result<bool>.Success(true, OperationStatus.Deleted)
                 : Result<bool>.Failure("problem deleting", OperationStatus.Error);
         }
@@ -386,6 +390,7 @@ public class PostRepo : IPostRepo
             return Result<bool>.Failure($"ERROR: {ex.Message}", OperationStatus.Error);
         }
     }
+
     public async Task<Result<bool>> HardDelete(Guid postId)
     {
         try
@@ -457,7 +462,6 @@ public class PostRepo : IPostRepo
         }
     }
 
-
     private void ApplyFilter(ref IQueryable<Post> query, string filterValue, string filterType)
     {
         query = filterType.ToLower() switch
@@ -469,7 +473,6 @@ public class PostRepo : IPostRepo
             _ => query,
         };
     }
-
 
     private void ApplySorting(ref IQueryable<Post> query, string sortBy, bool isSortAscending)
     {
@@ -485,6 +488,4 @@ public class PostRepo : IPostRepo
             query = isSortAscending ? query.OrderBy(orderBy) : query.OrderByDescending(orderBy);
         }
     }
-
-
 }

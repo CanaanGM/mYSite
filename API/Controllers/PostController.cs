@@ -5,7 +5,6 @@ using API.Contracts;
 using Application.Security;
 
 using DataAccess.Dtos;
-using DataAccess.Entities;
 using DataAccess.Repos;
 using DataAccess.Shared;
 
@@ -37,9 +36,8 @@ public class PostController : ControllerBase
     [FromQuery] string sortBy = "publish_date",
     [FromQuery] bool isSortAscending = true,
     [FromQuery] string? filterValue = null,
-    [FromQuery] string? filterType = null )
+    [FromQuery] string? filterType = null)
     {
-        
         var posts = await _postRepo.GetAll(page, pageSize, searchTerm, sortBy, isSortAscending, filterValue, filterType);
 
         return posts.Operation switch
@@ -71,13 +69,12 @@ public class PostController : ControllerBase
 
         return posts.Operation switch
         {
-            OperationStatus.Success => Ok(  posts.Value),
+            OperationStatus.Success => Ok(posts.Value),
             OperationStatus.NotFound => NotFound(),
             OperationStatus.Error => Problem(statusCode: 500, detail: "Something went wrong processing your request, please try again later."),
             _ => BadRequest()
         };
     }
-
 
     [HttpGet("{slug}")]
     public async Task<IActionResult> GetPost(string slug)
@@ -94,7 +91,7 @@ public class PostController : ControllerBase
 
     [Authorize(Roles = "Admin, User")]
     [HttpPost]
-    public async Task<IActionResult> UpSert( [FromBody] PostUpsertRequest post)
+    public async Task<IActionResult> UpSert([FromBody] PostUpsertRequest post)
     {
         var authorId = _userAccessor.GetUserId();
 
@@ -113,7 +110,7 @@ public class PostController : ControllerBase
             });
         return res.Operation switch
         {
-            OperationStatus.Created => CreatedAtAction(nameof(GetPost), new { slug = res.Value.Slug}, res.Value),
+            OperationStatus.Created => CreatedAtAction(nameof(GetPost), new { slug = res.Value.Slug }, res.Value),
             OperationStatus.Updated => NoContent(),
             OperationStatus.NotFound => Unauthorized(),
             OperationStatus.Error => Problem(statusCode: 500, detail: "Something went wrong processing your request, please try again later."),
@@ -121,13 +118,12 @@ public class PostController : ControllerBase
         };
     }
 
-
     [Authorize]
     [HttpPost("react")]
     public async Task<IActionResult> ReactToPost([FromBody] PostReactionRequest postReaction)
     {
         var userId = _userAccessor.GetUserId();
-        if(userId is null) return Unauthorized();
+        if (userId is null) return Unauthorized();
 
         var res = await _postRepo.UpSertPostReaction(userId, Guid.Parse(postReaction.PostId), postReaction.ReactionType);
 
@@ -140,7 +136,6 @@ public class PostController : ControllerBase
             _ => BadRequest()
         };
     }
-
 
     [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]

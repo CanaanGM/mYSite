@@ -9,7 +9,6 @@ using DataAccess.Repos;
 using DataAccess.Shared;
 
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -27,7 +26,6 @@ namespace API.Controllers
             _userAccessor = userAccessor;
         }
 
-
         [HttpGet("{postId}")]
         public async Task<IActionResult> GetAll(Guid postId)
         {
@@ -38,17 +36,17 @@ namespace API.Controllers
                 OperationStatus.Success => Ok(comments.Value),
                 OperationStatus.Error => Problem(statusCode: 500, detail: "Something went wrong processing your request, please try again later."),
                 _ => BadRequest()
-            } ;
+            };
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateComment([FromBody] CommentCreateDto newComment)
-        { 
+        {
             var authorId = _userAccessor.GetUserId();
 
             if (authorId is null) return Unauthorized();
 
-            var res = await _repo.UpsertComment(newComment,  authorId!);
+            var res = await _repo.UpsertComment(newComment, authorId!);
 
             return res.Operation switch
             {
@@ -64,7 +62,7 @@ namespace API.Controllers
         public async Task<IActionResult> ReactToComment(CommentReactionRequest reactionReq)
         {
             var userId = _userAccessor.GetUserId();
-            if(userId is null) return Unauthorized();
+            if (userId is null) return Unauthorized();
 
             var res = await _repo.UpsertCommentReaction(userId, reactionReq.commentId, reactionReq.reactionType);
 
@@ -76,9 +74,7 @@ namespace API.Controllers
                 OperationStatus.Error => Problem(statusCode: 500, detail: "Something went wrong processing your request, please try again later."),
                 _ => BadRequest()
             };
-
         }
-
 
         [HttpDelete("{commentId}")]
         public async Task<IActionResult> DeleteComment(Guid commentId)
@@ -92,11 +88,10 @@ namespace API.Controllers
             return res.Operation switch
             {
                 OperationStatus.Deleted => NoContent(),
-                OperationStatus.NotFound=> Unauthorized(),
+                OperationStatus.NotFound => Unauthorized(),
                 OperationStatus.Error => Problem(statusCode: 500, detail: "Something went wrong processing your request, please try again later."),
                 _ => BadRequest()
             };
         }
-
     }
 }

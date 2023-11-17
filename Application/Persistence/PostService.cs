@@ -1,18 +1,15 @@
-using Application.Dtos;
 using DataAccess.Contexts;
 
 namespace Application.Persistence;
 
-public class PostService 
+public class PostService
 {
     private readonly BlogContext _context;
 
-    public PostService(BlogContext context  )
+    public PostService(BlogContext context)
     {
         _context = context;
-        
     }
 
-    //get one 
-
+    //get one
 }

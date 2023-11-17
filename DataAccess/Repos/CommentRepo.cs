@@ -11,13 +11,7 @@ using DataAccess.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using static Azure.Core.HttpHeader;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace DataAccess.Repos
 {
@@ -33,7 +27,6 @@ namespace DataAccess.Repos
             _logger = logger;
             _mapper = mapper;
         }
-
 
         public async Task<Result<IEnumerable<CommentReadDto>>> GetCommentsForPost(Guid postId)
         {
@@ -61,7 +54,9 @@ namespace DataAccess.Repos
                                           PostId = comment.PostId,
                                           Updated = comment.Updated,
                                           Created = comment.Created
-                                      }).ToListAsync<CommentReadDto>();
+                                      })
+                                      .OrderBy(x => x.Created)
+                                      .ToListAsync<CommentReadDto>();
 
                 return Result<IEnumerable<CommentReadDto>>.Success(comments);
             }
@@ -72,25 +67,45 @@ namespace DataAccess.Repos
             }
         }
 
-        public async Task<Result<IList<CommentReadForAuthorDto>>> GetAllCommentsForUser(string userId)
+        public async Task<Result<PagedList<CommentReadForAuthorDto>>> GetAllCommentsForUser(
+            string userId,
+            int page = 1,
+            int pageSize = 10
+            )
         {
             try
             {
-                var comments = await _blogContext.Comments
+                var query = _blogContext.Comments
                     .AsNoTracking()
-                    .Include(x => x.Post)
-                    // do i need the replies ? ? ? 
+                    .Include(x => x.Post);
+                    // do i need the replies ? ? ?
+
+                var comments = await query
                     .Where(x => x.AuthorId == userId)
+                    .Skip((page -1 ) * pageSize)
+                    .Take(pageSize)
                     .OrderBy(x => x.Created)
                     .ProjectTo<CommentReadForAuthorDto>(_mapper.ConfigurationProvider)
-                    .ToListAsync();
+                .ToListAsync();
 
-                return Result<IList<CommentReadForAuthorDto>>.Success(comments);
+
+                var totalCount = await query.CountAsync();
+                var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+                var result = new PagedList<CommentReadForAuthorDto>(
+                    data: comments,
+                    totalCount: totalCount,
+                    totalPages: totalPages,
+                    currentPage: page,
+                    pageSize: pageSize
+                    );
+
+                return Result<PagedList<CommentReadForAuthorDto>>.Success(result);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message, ex);
-                return Result<IList<CommentReadForAuthorDto>>.Failure(ex.Message, OperationStatus.Error);
+                return Result<PagedList<CommentReadForAuthorDto>>.Failure(ex.Message, OperationStatus.Error);
             }
         }
 
@@ -99,7 +114,7 @@ namespace DataAccess.Repos
             try
             {
                 var author = await _blogContext.Users.FirstAsync(a => a.Id == authorId);
-                if (author is null) 
+                if (author is null)
                     return Result<CommentReadDto>.Failure("Failed to find user . . .", OperationStatus.NotFound);
 
                 var comment = await _blogContext.Comments.FirstOrDefaultAsync(x => x.Id == upsertComment.Id);
@@ -107,15 +122,12 @@ namespace DataAccess.Repos
                 if (comment is null || comment.AuthorId != author.Id)
                     return await CreateComment(upsertComment, author);
 
-
                 comment.Body = upsertComment.Body ?? comment.Body;
 
                 var res = await _blogContext.SaveChangesAsync() > 0;
                 return res
                     ? Result<CommentReadDto>.Success(_mapper.Map<CommentReadDto>(comment), OperationStatus.Updated)
                     : Result<CommentReadDto>.Failure("Couldn't update comment", OperationStatus.Error);
-
-
             }
             catch (Exception ex)
             {
@@ -123,9 +135,6 @@ namespace DataAccess.Repos
                 return Result<CommentReadDto>.Failure(ex.Message, OperationStatus.Error);
             }
         }
-
-
-
 
         public async Task<Result<bool>> SoftDeleteComment(Guid commentId, string authorId)
         {
@@ -142,7 +151,6 @@ namespace DataAccess.Repos
                 : Result<bool>.Failure("Couldn't update comment", OperationStatus.Error);
         }
 
-
         public async Task<Result<bool>> UpsertCommentReaction(string userId, Guid commentId, ReactionType reactionType)
         {
             try
@@ -153,12 +161,9 @@ namespace DataAccess.Repos
                 Result<bool> res;
 
                 if (existingReaction is not null && existingReaction?.ReactionType != reactionType)
-                    res =  UpdateReaction(existingReaction, reactionType);
-
-
+                    res = UpdateReaction(existingReaction, reactionType);
                 else if (existingReaction?.ReactionType == reactionType)
                     res = RemoveReaction(existingReaction);
-
                 else
                     res = CreateReaction(userId, commentId, reactionType);
 
@@ -167,7 +172,6 @@ namespace DataAccess.Repos
                 return result
                     ? res
                     : Result<bool>.Failure("Failed to create Reaction", OperationStatus.Error);
-
             }
             catch (Exception ex)
             {
@@ -208,14 +212,13 @@ namespace DataAccess.Repos
                 var comment = new Comment
                 {
                     Id = newComment.Id,
-                    AuthorId =  author.Id,
+                    AuthorId = author.Id,
                     Active = true,
                     parentId = newComment.ParentId,
                     PostId = newComment.PostId,
                     Created = DateTime.UtcNow,
                     Updated = DateTime.UtcNow,
                     Body = newComment.Body,
-
                 };
 
                 await _blogContext.Comments.AddAsync(comment);
@@ -239,7 +242,6 @@ namespace DataAccess.Repos
                             Created = DateTime.UtcNow,
                             Updated = DateTime.UtcNow,
                             Body = newComment.Body,
-
                         }
                         , OperationStatus.Created)
                     : Result<CommentReadDto>.Failure("Couldn't create comment", OperationStatus.Error);

@@ -3,13 +3,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace DataAccess.Contexts
 {
     public class CommentReactionConfiguration : IEntityTypeConfiguration<CommentUserReaction>
@@ -18,7 +11,7 @@ namespace DataAccess.Contexts
         {
             modelBuilder
                 .HasKey(ulc => new { ulc.UserId, ulc.CommentId });
-                
+
             modelBuilder
                 .HasOne(ulc => ulc.User)
                 .WithMany(u => u.CommentReactions)

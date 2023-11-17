@@ -1,8 +1,9 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Options;
+
+using System.Diagnostics;
 
 namespace API.Common.Errors;
 
@@ -74,7 +75,6 @@ internal sealed class ScarletSiteProblemDetailsFactory : ProblemDetailsFactory
 
         return problemDetails;
     }
-
 
     private void ApplyProblemDetailsDefaults(HttpContext httpContext, ProblemDetails problemDetails, int statusCode)
     {

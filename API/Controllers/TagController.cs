@@ -26,7 +26,6 @@ namespace API.Controllers
                 OperationStatus.Success => Ok(tags.Value),
                 OperationStatus.Error => Problem(statusCode: 500, detail: "Something went wrong processing your request, please try again later."),
                 _ => BadRequest()
-
             };
         }
 
@@ -39,11 +38,7 @@ namespace API.Controllers
                 OperationStatus.Success => Ok(tag.Value),
                 OperationStatus.Error => Problem(statusCode: 500, detail: "Something went wrong processing your request, please try again later."),
                 _ => BadRequest()
-
             };
-
         }
-
-
     }
 }

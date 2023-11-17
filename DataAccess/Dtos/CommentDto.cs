@@ -1,19 +1,7 @@
-﻿
-
-
-
-
-// Ignore Spelling: Dto Dtos
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Ignore Spelling: Dto Dtos
 
 namespace DataAccess.Dtos
 {
-
     public class CommentReadDto
     {
         public Guid Id { get; set; }
@@ -55,6 +43,5 @@ namespace DataAccess.Dtos
     {
         public Guid Id { get; set; }
         public string Body { get; set; } = null!;
-
     }
 }

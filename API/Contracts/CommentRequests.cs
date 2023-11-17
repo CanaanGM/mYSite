@@ -2,10 +2,8 @@
 
 namespace API.Contracts
 {
-
     public record CommentReactionRequest(
             Guid commentId,
             ReactionType reactionType
     );
-
 }

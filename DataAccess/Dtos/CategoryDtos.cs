@@ -16,6 +16,5 @@ namespace DataAccess.Dtos
         public DateTime CreatedAt { get; set; }
         public DateTime LastModifiedAt { get; set; }
         public ICollection<PostReadWithEntity> Posts { get; set; }
-
     }
 }

@@ -1,4 +1,3 @@
-
 using System.ComponentModel.DataAnnotations;
 
 namespace DataAccess.Entities;
@@ -6,12 +5,15 @@ namespace DataAccess.Entities;
 public class Post
 {
     public Guid Id { get; set; }
+
     [Required]
     [MaxLength(128)]
     public string Title { get; set; } = null!;
+
     [Required]
     [MaxLength(128)]
     public string Slug { get; set; } = null!;
+
     public string Content { get; set; } = null!;
     public bool IsSoftDeleted { get; set; } = false;
     public bool IsPublished { get; set; } = false;
@@ -22,9 +24,9 @@ public class Post
     public User Author { get; set; } = null!;
     public ICollection<PostTag> PostTags { get; set; } = null!;
     public ICollection<PostCategory> PostCategories { get; set; } = null!;
-    public ICollection<UserFavoritePost> Favorites { get; set; } 
-
+    public ICollection<UserFavoritePost> Favorites { get; set; }
+    // TODO: this would need to change in i wanna add in sorting 
+      // make a look up table and add in FavDate in it.
     public ICollection<Comment>? Comments { get; set; }
     public ICollection<PostUserReaction> UserReactions { get; set; }
-
 }

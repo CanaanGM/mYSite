@@ -18,7 +18,6 @@ namespace API.Common.Middleware
             _dateTimeProvider = dateTimeProvider;
         }
 
-
         public async Task InvokeAsync(HttpContext context)
         {
             try
@@ -27,9 +26,8 @@ namespace API.Common.Middleware
 
                 await _next(context);
             }
-            catch (Exception )
+            catch (Exception)
             {
-
                 throw;
             }
         }
@@ -43,7 +41,6 @@ namespace API.Common.Middleware
             var remoteIpAddress = context.Connection.RemoteIpAddress;
 
             _logger.LogInformation($"A request was made by the agent: {userAgent}.\nAt:\n\t{_dateTimeProvider.UtcNow} UTC.\n\t{_dateTimeProvider.LocalNow} Local.\nwith the auth header\n{auth}\nfrom: IP:{remoteIpAddress}.\nhost: '{host}'.");
-
         }
     }
 }

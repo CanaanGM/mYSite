@@ -10,13 +10,6 @@ using DataAccess.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-
 namespace DataAccess.Repos
 {
     public class TagRepo : ITagRepo
@@ -42,7 +35,6 @@ namespace DataAccess.Repos
 
                     //.Include(x=>x.PostTags)
                     //.ThenInclude(x=>x.Post)
-
 
                     .ProjectTo<TagReadDto>(_mapper.ConfigurationProvider)
                     .ToListAsync();
@@ -95,11 +87,10 @@ namespace DataAccess.Repos
                     .AsNoTracking()
                     .ProjectTo<TagReadDto>(_mapper.ConfigurationProvider)
                     .FirstOrDefaultAsync(x => x.Name == name);
-                    ;
+                ;
 
                 // 404 implement powlease
                 return Result<TagReadDto>.Success(tag);
-
             }
             catch (Exception ex)
             {
@@ -108,6 +99,4 @@ namespace DataAccess.Repos
             }
         }
     }
-
-
 }

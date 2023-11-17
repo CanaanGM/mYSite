@@ -2,7 +2,6 @@
 
 namespace DataAccess.Shared;
 
-
 public enum OperationStatus
 {
     Success,

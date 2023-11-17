@@ -20,7 +20,6 @@ public class BlogContext : IdentityDbContext<User>
     public DbSet<PostUserReaction> PostsUsersReaction { get; set; }
     public DbSet<CommentUserReaction> CommentsUsersReactions { get; set; }
 
-
     public BlogContext()
     {
         // for cli ?
@@ -42,7 +41,6 @@ public class BlogContext : IdentityDbContext<User>
         modelBuilder.Entity<User>()
             .HasMany(u => u.Comments);
 
-
         modelBuilder.ApplyConfiguration(new CategoryConfiguration());
         modelBuilder.ApplyConfiguration(new CommentConfiguration());
         modelBuilder.ApplyConfiguration(new PostCategoryConfiguration());
@@ -51,19 +49,10 @@ public class BlogContext : IdentityDbContext<User>
         modelBuilder.ApplyConfiguration(new TagConfiguration());
         modelBuilder.ApplyConfiguration(new UserFavoritePostConfiguration());
 
-
         modelBuilder.ApplyConfiguration(new PostReactionConfiguration());
         modelBuilder.ApplyConfiguration(new CommentReactionConfiguration());
 
         //modelBuilder.Entity<Post>()
         //    .HasQueryFilter(p => p.IsPublished);
-
-
-
-
-
-
-
-
     }
 }

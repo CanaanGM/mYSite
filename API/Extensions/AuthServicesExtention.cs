@@ -66,7 +66,6 @@ namespace API.Extensions
                           .WithOrigins("http://localhost:4321")
                           .WithOrigins("http://localhost:4322")
 
-
                           ;
                     })
             );
@@ -82,7 +81,6 @@ namespace API.Extensions
                             ValidateAudience = true,
                             ValidAudience = configuration["JwtSettings:Audience"]!,
 
-                            
                             ValidateLifetime = true,
                             ClockSkew = TimeSpan.FromMinutes(5), //TODO: change this to sec for dep
                             ValidateIssuerSigningKey = true,
@@ -94,10 +92,9 @@ namespace API.Extensions
                                 SecurityAlgorithms.HmacSha512Signature,
                             }
                         };
-
                     });
 
-             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
             services.AddAuthorization();
             return services;
         }

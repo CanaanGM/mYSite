@@ -1,4 +1,5 @@
 using DataAccess.Dtos;
+using DataAccess.Shared;
 
 namespace API.Contracts;
 
@@ -20,10 +21,10 @@ public record EmailConfirmationResponse(string message);
 public record RegisterResponse(string message);
 
 public record UserProfileResponse(
-    string username, 
-    string email, 
-    string[] Roles, 
+    string username,
+    string email,
+    string[] Roles,
     string? profilePicture,
-    List<CommentReadForAuthorDto> comments, 
-    List<PostReadWithEntity> favoritePosts 
+    PagedList<CommentReadForAuthorDto> comments,
+    PagedList<PostReadWithEntity> favoritePosts
     );

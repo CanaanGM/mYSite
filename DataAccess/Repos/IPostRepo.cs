@@ -7,21 +7,32 @@ namespace DataAccess.Repos
     public interface IPostRepo
     {
         Task<Result<PostReadDetailsDto>> CreatePost(PostUpsertDto postDto);
+
         Task<Result<bool>> HardDelete(Guid postId);
+
         Task<Result<PagedList<PostGeneralInfoDto>>> GetAll(
-         int page = 1,
-         int pageSize = 10,
-         string? searchTerm = null,
-         string sortBy = "publish_date",
-         bool isSortAscending = true,
-         string? filterValue = null,
-         string? filterType = null);
+             int page = 1,
+             int pageSize = 10,
+             string? searchTerm = null,
+             string sortBy = "publish_date",
+             bool isSortAscending = true,
+             string? filterValue = null,
+             string? filterType = null);
+
         Task<Result<Dictionary<string, List<PostGeneralInfoDto>>>> GetAllPostsGroupedByCategory();
+
         Task<Result<List<ArchivePostDto>>> GetArchivePosts();
+
         Task<Result<PostReadDetailsDto>> GetBySlug(string slug);
+
         Task<Result<PostReadDetailsDto>> UpsertPost(string authorId, Guid? postId, PostUpsertDto postDto);
+
         Task<Result<bool>> SoftDelete(Guid postId);
-        Task<Result<IList<PostReadWithEntity>>> GetUsersFavoritePosts(string userId);
+
+        Task<Result<PagedList<PostReadWithEntity>>> GetUsersFavoritePosts(string userId,
+            int page = 1,
+            int pageSize = 10);
+
         Task<Result<bool>> UpSertPostReaction(string userId, Guid postId, ReactionType reactionType);
     }
 }

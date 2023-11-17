@@ -1,6 +1,3 @@
-using System.Net;
-using System.Text;
-using System.Text.Encodings.Web;
 using API.Contracts;
 
 using Application.Security;
@@ -25,12 +22,12 @@ public class AccountController : ControllerBase
     private readonly IPostRepo _postRepo;
 
     public AccountController(
-        UserManager<User> userManager, 
-        IJwtGenerator jwtGenerator, 
-        IUserAccessor userAccessor, 
+        UserManager<User> userManager,
+        IJwtGenerator jwtGenerator,
+        IUserAccessor userAccessor,
         ICommentRepo commentRepo,
         IPostRepo postRepo
-        
+
         )
     {
         _jwtGenerator = jwtGenerator;
@@ -39,6 +36,7 @@ public class AccountController : ControllerBase
         _postRepo = postRepo;
         _userManager = userManager;
     }
+
     [AllowAnonymous]
     [HttpPost("register")]
     public async Task<ActionResult> Register(UserRegisterRequest userCreds)
@@ -64,7 +62,7 @@ public class AccountController : ControllerBase
 
         // TODO: email body generation
         var emailConfirmToken = Uri.EscapeDataString(await _userManager.GenerateEmailConfirmationTokenAsync(user));
-        string confirmationLink =  GenerateConfirmationLink(user, emailConfirmToken, nameof(ConfirmEmail));
+        string confirmationLink = GenerateConfirmationLink(user, emailConfirmToken, nameof(ConfirmEmail));
 
         return CreatedAtAction(nameof(Register), new RegisterResponse(confirmationLink));
     }
@@ -90,7 +88,7 @@ public class AccountController : ControllerBase
     }
 
     // todo
-    // TODO: Think about this more carefully, it maybe a threat 
+    // TODO: Think about this more carefully, it maybe a threat
     // password Rest request
     [AllowAnonymous]
     [HttpPost("requestPasswordReset")]
@@ -99,12 +97,12 @@ public class AccountController : ControllerBase
         if (String.IsNullOrEmpty(resetRequest.Verifier))
             return BadRequest("provider a valid verifier");
 
-        var user = await _userManager.FindByEmailAsync(resetRequest.Verifier) 
-            ??     await _userManager.FindByNameAsync(resetRequest.Verifier);
+        var user = await _userManager.FindByEmailAsync(resetRequest.Verifier)
+            ?? await _userManager.FindByNameAsync(resetRequest.Verifier);
 
         if (user is null) return BadRequest("verifier is incorrect, please double check and try again");
 
-        var passwordResetToken =  Uri.EscapeDataString(await _userManager.GeneratePasswordResetTokenAsync(user));
+        var passwordResetToken = Uri.EscapeDataString(await _userManager.GeneratePasswordResetTokenAsync(user));
         var confirmationLink = GenerateConfirmationLink(user, passwordResetToken, nameof(PasswordReset));
 
         // TODO: send as email yo
@@ -119,15 +117,15 @@ public class AccountController : ControllerBase
         if (String.IsNullOrEmpty(userId)
          || String.IsNullOrEmpty(token)
          || String.IsNullOrEmpty(passwordRequest.newPassword))
-        return BadRequest(new { message = "Invalid request. User ID and token are required." });
-        
+            return BadRequest(new { message = "Invalid request. User ID and token are required." });
+
         var user = await _userManager.FindByIdAsync(userId);
-        if (user is null) 
+        if (user is null)
             return BadRequest("Double check the values you've provided please.");
 
         var result = await _userManager.ResetPasswordAsync(user, token, passwordRequest.newPassword);
-        return  result.Succeeded 
-            ?  Ok("Success!\nPlease login again.")
+        return result.Succeeded
+            ? Ok("Success!\nPlease login again.")
             : BadRequest("Something went wrong please try again later");
     }
 
@@ -138,15 +136,15 @@ public class AccountController : ControllerBase
     public async Task<IActionResult> RequestEmailConfirmation([FromBody] ConfirmEmailRequest emailConfirmationRequest)
     {
         var user = await _userManager.FindByEmailAsync(emailConfirmationRequest.Email);
-        if (user is null )
+        if (user is null)
             return BadRequest();
 
         if (user.EmailConfirmed)
             return Ok("email is already confirmed!");
 
         var emailConfirmToken = Uri.EscapeDataString(await _userManager.GenerateEmailConfirmationTokenAsync(user));
-        var confirmationLink =  GenerateConfirmationLink(user, emailConfirmToken, nameof(ConfirmEmail));
-        
+        var confirmationLink = GenerateConfirmationLink(user, emailConfirmToken, nameof(ConfirmEmail));
+
         //TODO send the email not return it in the request!
         return Ok(confirmationLink);
     }
@@ -168,10 +166,9 @@ public class AccountController : ControllerBase
         var result = await _userManager.ConfirmEmailAsync(user, token);
 
         if (result.Succeeded)
-            return Ok(new EmailConfirmationResponse("Email confirmed successfully." ));
+            return Ok(new EmailConfirmationResponse("Email confirmed successfully."));
         else
-            return BadRequest(new EmailConfirmationResponse("Email confirmation failed." ));
-        
+            return BadRequest(new EmailConfirmationResponse("Email confirmation failed."));
     }
 
     [Authorize]
@@ -216,9 +213,9 @@ public class AccountController : ControllerBase
             ? Ok(new EmailCheckResponse(isAvailable: false, message: "Email is not available! ;=;"))
             : Ok(new EmailCheckResponse(isAvailable: true, message: "Email is available! :D"));
     }
+
     private string GenerateConfirmationLink(User user, string emailConfirmToken, string controllerName)
     {
-
         // <Request.Scheme> :// <Request.Host> /api/auth/ConfirmEmail?userId=user.Id&token=emailConfirmationToken
         var confirmationLink = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/auth/{controllerName}?userId={user.Id}&token={emailConfirmToken}";
         return confirmationLink;
@@ -226,7 +223,11 @@ public class AccountController : ControllerBase
 
     [Authorize]
     [HttpGet("profile")]
-    public async Task<IActionResult> GetUserProfile()
+    public async Task<IActionResult> GetUserProfile(
+        [FromQuery] int commentPage = 1,
+        [FromQuery] int commanePageSize = 10,
+        [FromQuery] int postsPage = 1,
+        [FromQuery] int postsPageSize = 10)
     {
         var userName = _userAccessor.GetUsername();
 
@@ -237,27 +238,23 @@ public class AccountController : ControllerBase
 
         var userRoles = await _userManager.GetRolesAsync(user);
 
-        //todo: Get user's comment 
-        var userComments = await _commentRepo.GetAllCommentsForUser(user.Id);
-        var userFavorites = await _postRepo.GetUsersFavoritePosts(user.Id);
+        //todo: Get user's comment
+        var userComments = await _commentRepo.GetAllCommentsForUser(user.Id, commentPage, commanePageSize);
+        var userFavorites = await _postRepo.GetUsersFavoritePosts(user.Id, postsPage, postsPageSize);
 
         if (!userComments.IsSuccess || !userFavorites.IsSuccess)
             return Problem(statusCode: 500, detail: "Something went wrong processing your request, please try again later.");
 
         return Ok(
             new UserProfileResponse(
-                username : user.UserName!,
+                username: user.UserName!,
                 email: user.Email!,
                 profilePicture: user.ProfilePicture,
                 Roles: userRoles.ToArray(),
-                comments: userComments.Value.ToList(),
-                favoritePosts: userFavorites.Value.ToList()
+                comments: userComments.Value,
+                favoritePosts: userFavorites.Value
 
                 )
             );
-
-
     }
-
-
 }

@@ -58,7 +58,6 @@ var app = builder.Build();
         // add a retry mechanism
         Console.WriteLine("Add me to a proper logger damn u!!!");
         Console.WriteLine(ex);
-
     }
 
     app.Run();
