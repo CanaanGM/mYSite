@@ -9,6 +9,7 @@ public class User : IdentityUser
     public List<Comment>? Comments { get; set; }
     public List<Post> AuthoredPosts { get; set; } = null!;
 
+    // TODO : soft and hard deletion, normal user and admin
     public List<UserFavoritePost> Favorites { get; set; }
     public ICollection<PostUserReaction> PostReactions { get; set; }
     public ICollection<CommentUserReaction> CommentReactions { get; set; }
