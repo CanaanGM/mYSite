@@ -11,6 +11,7 @@ public record CurrentUserResponse(
     string[] Roles
     );
 public record LoginResponse(
+    string id,
     string Email,
     string UserName,
     string Token,

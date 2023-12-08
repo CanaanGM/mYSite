@@ -8,7 +8,8 @@ public record UserLoginRequest(
 public record UserRegisterRequest(
     string Email,
     string UserName,
-    string Password
+    string Password,
+    string? profilePicture
 
 );
 

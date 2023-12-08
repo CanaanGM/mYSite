@@ -49,7 +49,7 @@ public class PostRepo : IPostRepo
                 .ProjectTo<PostReadDetailsDto>(_mapper.ConfigurationProvider)
                 .SingleOrDefaultAsync(x => x.Slug == slug);
 
-            if (post is null) return Result<PostReadDetailsDto>.Success(new PostReadDetailsDto());
+            if (post is null) return Result<PostReadDetailsDto>.Failure("Post was not found", OperationStatus.NotFound);
 
             var post2 = await _context.Posts
                 .Include(x => x.UserReactions)
@@ -148,7 +148,7 @@ public class PostRepo : IPostRepo
             {
                 query = query.Where(p =>
                     p.Title.Contains(searchTerm)
-                    || p.Content.Contains(searchTerm)
+                    || p.Content.ToString()!.Contains(searchTerm)
 
                     );
             }
@@ -156,6 +156,7 @@ public class PostRepo : IPostRepo
             ApplySorting(ref query, sortBy, isSortAscending);
 
             var posts = await query
+                .OrderByDescending(x => x.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .Select(post => new PostGeneralInfoDto

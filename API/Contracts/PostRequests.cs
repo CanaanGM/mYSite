@@ -4,11 +4,11 @@ using DataAccess.Entities;
 namespace API.Contracts;
 
 public record PostUpsertRequest(
-    Guid? Id,
+    string? Id,
     string Title,
     string Body,
-    List<TagUpsertDto> Tags,
-    List<CategoryUpsertDto> Categories,
+    string Tags, // string separeated by comma, first trimm it the split on comma the get into a comma !
+    string Categories,
     bool IsPublised = false
 );
 

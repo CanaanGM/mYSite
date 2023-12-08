@@ -80,6 +80,7 @@ public class AccountController : ControllerBase
 
         return Ok(
             new LoginResponse(
+                user.Id,
                 user.Email!,
                 user.UserName!,
                 token,

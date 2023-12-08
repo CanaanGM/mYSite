@@ -11,6 +11,8 @@ using DataAccess.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+using Newtonsoft.Json;
+
 namespace API.Controllers;
 
 [ApiController]
@@ -84,6 +86,7 @@ public class PostController : ControllerBase
         return post.Operation switch
         {
             OperationStatus.Success => Ok(post.Value),
+            OperationStatus.NotFound => NotFound(),
             OperationStatus.Error => Problem(statusCode: 500, detail: "Something went wrong processing your request, please try again later."),
             _ => BadRequest()
         };
@@ -97,15 +100,24 @@ public class PostController : ControllerBase
 
         if (authorId is null) return Unauthorized();
 
+        var tags = new List<TagUpsertDto>();
+        var categories = new List<CategoryUpsertDto>();
+
+        foreach (var category in post.Categories.Trim().Split(','))
+            categories.Add(new CategoryUpsertDto { Name = category});
+
+        foreach (var tag in post.Tags.Trim().Split(','))
+            tags.Add(new TagUpsertDto { Name = tag });
+
         var res = await _postRepo.UpsertPost(
             authorId,
-            post.Id,
+            string.IsNullOrEmpty(post.Id.Trim()) ? Guid.Empty : Guid.Parse(post.Id),
             new PostUpsertDto
             {
                 Title = post.Title,
-                Content = post.Body,
-                Tags = post.Tags,
-                Categories = post.Categories,
+                Content = JsonConvert.DeserializeObject( post.Body).ToString(), // here untill i decide on what kinda editor i wanna use
+                Tags = tags,
+                Categories = categories,
                 IsPublished = post.IsPublised
             });
         return res.Operation switch
