@@ -1,11 +1,11 @@
-version: '3.4'
+version: '3.9'
 
 services:
   api:
     image: divieon/blog:latest
     build:
       context: .
-      dockerfile: API/Dockerfile
+      dockerfile: src/API/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
