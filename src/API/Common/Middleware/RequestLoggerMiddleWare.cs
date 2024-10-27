@@ -23,7 +23,6 @@ namespace API.Common.Middleware
             try
             {
                 ExtractLogs(context);
-
                 await _next(context);
             }
             catch (Exception)

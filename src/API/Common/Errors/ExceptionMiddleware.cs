@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-using Newtonsoft.Json;
+using System.Text.Json;
+
 
 namespace API.Common.Errors
 {
@@ -45,7 +46,7 @@ namespace API.Common.Errors
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
             context.Response.ContentType = "application/problem+json";
 
-            await context.Response.WriteAsync(JsonConvert.SerializeObject(problemDetails));
+            await context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails));
         }
     }
 }

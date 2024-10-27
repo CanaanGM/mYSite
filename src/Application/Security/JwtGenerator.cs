@@ -16,10 +16,7 @@ public class JwtGenerator : IJwtGenerator
     private IDateTimeProvider _dateTimeProvider;
     private readonly JwtSettings _jwtSettings;
 
-    public JwtGenerator(
-        IDateTimeProvider dateTimeProvider,
-        IOptions<JwtSettings> jwtOptions
-        )
+    public JwtGenerator(IDateTimeProvider dateTimeProvider, IOptions<JwtSettings> jwtOptions)
     {
         _jwtSettings = jwtOptions.Value;
         _dateTimeProvider = dateTimeProvider;
@@ -36,10 +33,12 @@ public class JwtGenerator : IJwtGenerator
 
         var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.UserName!),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id), // user identity
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), // token ID
+            new Claim(JwtRegisteredClaimNames.Iat, _dateTimeProvider.UtcNow.ToString()) ,// when it was issued
             new Claim(JwtRegisteredClaimNames.Email,user.Email!),
-            new Claim(JwtRegisteredClaimNames.NameId ,user.Id.ToString()),
+            new Claim(JwtRegisteredClaimNames.NameId ,user.UserName!),
+            new Claim(ClaimTypes.NameIdentifier, user.Email!) // anything that uniquely identifies the user
         };
 
         foreach (var role in userRoles)
@@ -53,8 +52,9 @@ public class JwtGenerator : IJwtGenerator
             expires: _dateTimeProvider.UtcNow.AddMinutes(_jwtSettings.ExpiryMinutes),
             signingCredentials: signingCredentials,
             audience: _jwtSettings.Audience
-            );
 
+            );
         return new JwtSecurityTokenHandler().WriteToken(securityToken);
     }
+
 }

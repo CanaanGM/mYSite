@@ -54,5 +54,7 @@ public class BlogContext : IdentityDbContext<User>
 
         //modelBuilder.Entity<Post>()
         //    .HasQueryFilter(p => p.IsPublished);
+
+        
     }
 }

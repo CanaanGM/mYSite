@@ -35,9 +35,7 @@ public static class DependencyInjection
         })
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<BlogContext>()
-            .AddDefaultTokenProviders()
-
-            ;
+            .AddDefaultTokenProviders();
 
         return services;
     }
